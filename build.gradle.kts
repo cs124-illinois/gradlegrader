@@ -17,15 +17,9 @@ subprojects {
     }
 }
 tasks.dependencyUpdates {
-    resolutionStrategy {
-        componentSelection {
-            all {
-                if (listOf("alpha", "beta", "rc", "cr", "m", "preview", "b", "ea", "eap", "pr").any { qualifier ->
-                    candidate.version.matches(Regex("(?i).*[.-]$qualifier[.\\d-+]*"))
-                }) {
-                    reject("Release candidate")
-                }
-            }
+    rejectVersionIf {
+        listOf("alpha", "beta", "rc", "cr", "m", "preview", "b", "ea", "eap", "pr").any { qualifier ->
+            candidate.version.matches(Regex("(?i).*[.-]$qualifier[.\\d-+]*"))
         }
     }
     gradleReleaseChannel = "current"
