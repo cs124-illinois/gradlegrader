@@ -253,8 +253,8 @@ class GradleGraderPlugin : Plugin<Project> {
                         configLoader.readValue<CheckpointConfig>(file).checkpoint
                     }
                 )?.also {
-                    scoreTask.currentCheckpoint = it
-                }
+                scoreTask.currentCheckpoint = it
+            }
 
             val evalPending = findSubprojects().toMutableList()
             evalPending.remove(project)
