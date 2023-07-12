@@ -1,9 +1,9 @@
 plugins {
-    kotlin("jvm") version "1.8.10" apply false
+    kotlin("jvm") version "1.9.0" apply false
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("org.jmailen.kotlinter") version "3.14.0" apply false
-    id("com.github.ben-manes.versions") version "0.46.0"
-    id("com.google.devtools.ksp").version("1.8.10-1.0.9") apply false
+    id("org.jmailen.kotlinter") version "3.15.0" apply false
+    id("com.github.ben-manes.versions") version "0.47.0"
+    id("com.google.devtools.ksp").version("1.9.0-1.0.11") apply false
 }
 allprojects {
     repositories {

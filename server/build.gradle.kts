@@ -3,7 +3,7 @@ import java.io.StringWriter
 import java.util.Properties
 
 group = "edu.illinois.cs.cs124"
-version = "2023.3.1"
+version = "2023.7.0"
 
 plugins {
     kotlin("jvm")
@@ -13,19 +13,19 @@ plugins {
     id("com.google.devtools.ksp")
 }
 dependencies {
-    ksp("com.squareup.moshi:moshi-kotlin-codegen:1.14.0")
+    ksp("com.squareup.moshi:moshi-kotlin-codegen:1.15.0")
 
-    implementation("io.ktor:ktor-server-netty:2.2.4")
-    implementation("org.mongodb:mongodb-driver:3.12.12")
-    implementation("com.squareup.moshi:moshi-kotlin:1.14.0")
+    implementation("io.ktor:ktor-server-netty:2.3.2")
+    implementation("org.mongodb:mongodb-driver:3.12.14")
+    implementation("com.squareup.moshi:moshi-kotlin:1.15.0")
     implementation("com.github.cs125-illinois:ktor-moshi:2022.9.0")
-    implementation("ch.qos.logback:logback-classic:1.4.6")
+    implementation("ch.qos.logback:logback-classic:1.4.8")
     implementation("com.uchuhimo:konf-core:1.1.2")
     implementation("com.uchuhimo:konf-yaml:1.1.2")
     implementation("io.github.microutils:kotlin-logging:3.0.5")
-    implementation("io.ktor:ktor-server-cors:2.2.4")
-    implementation("io.ktor:ktor-server-forwarded-header:2.2.4")
-    implementation("io.ktor:ktor-server-content-negotiation:2.2.4")
+    implementation("io.ktor:ktor-server-cors:2.3.2")
+    implementation("io.ktor:ktor-server-forwarded-header:2.3.2")
+    implementation("io.ktor:ktor-server-content-negotiation:2.3.2")
 }
 application {
     mainClass.set("edu.illinois.cs.cs125.gradlegrader.server.MainKt")
