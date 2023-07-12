@@ -31,7 +31,7 @@ import kotlin.math.max
 /**
  * A Gradle task to generate the grade report.
  */
-open class GradeTask : DefaultTask() {
+open class ScoreTask : DefaultTask() {
 
     /** Captured output logs.  */
     private var taskOutput = ""

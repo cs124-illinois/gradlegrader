@@ -49,9 +49,9 @@ class GradleGraderPlugin : Plugin<Project> {
         val checkstyleTask = project.tasks.register("relentlessCheckstyle", RelentlessCheckstyle::class.java).get()
         val detektTask = project.tasks.register("ourDetekt", Detekt::class.java).get()
 
-        val targetTask = project.tasks.register("grade").get()
-        val gradeTask: GradeTask = project.tasks.register("score", GradeTask::class.java).get()
-        gradeTask.mustRunAfter(targetTask)
+        val gradeTask = project.tasks.register("grade").get()
+        val scoreTask: ScoreTask = project.tasks.register("score", ScoreTask::class.java).get()
+        scoreTask.mustRunAfter(gradeTask)
 
         project.tasks.register("fingerprintTests", FingerprintTask::class.java)
         project.tasks.register("checkTestFingerprints", CheckFingerprintTask::class.java)
@@ -85,7 +85,7 @@ class GradleGraderPlugin : Plugin<Project> {
                         )
                     }
                 }
-                gradeTask.contributors = partners
+                scoreTask.contributors = partners
             }
 
             // Check VCS
@@ -98,9 +98,9 @@ class GradleGraderPlugin : Plugin<Project> {
                 } catch (_: Exception) {
                     exitManager.fail("Grader Git integration is enabled but the project isn't a Git repository.")
                 }
-                gradeTask.gitConfig = gitRepo.config
+                scoreTask.gitConfig = gitRepo.config
                 val lastCommit = gitRepo.resolve(Constants.HEAD).name
-                gradeTask.lastCommitId = lastCommit
+                scoreTask.lastCommitId = lastCommit
                 if (config.vcs.requireCommit) {
                     var scoreInfo = VcsScoreInfo(listOf())
                     try {
@@ -120,8 +120,8 @@ class GradleGraderPlugin : Plugin<Project> {
                     if (checkpointScoreInfo.increased && checkpointScoreInfo.lastSeenCommit == lastCommit && !clean) {
                         exitManager.fail("The autograder will not run until you commit the changes that increased your score.")
                     }
-                    gradeTask.scoreInfo = scoreInfo
-                    gradeTask.repoIsClean = clean
+                    scoreTask.scoreInfo = scoreInfo
+                    scoreTask.repoIsClean = clean
                 }
             }
 
@@ -138,7 +138,7 @@ class GradleGraderPlugin : Plugin<Project> {
                 checkstyleTask.configFile =
                     config.checkstyle.configFile ?: exitManager.fail("checkstyle.configFile not specified")
                 checkstyleTask.classpath = project.files()
-                gradeTask.listenTo(checkstyleTask)
+                scoreTask.listenTo(checkstyleTask)
             }
 
             if (config.detekt.enabled) {
@@ -152,7 +152,7 @@ class GradleGraderPlugin : Plugin<Project> {
 
             // Configure the test tasks
             testTasks.values.forEach {
-                gradeTask.listenTo(it)
+                scoreTask.listenTo(it)
                 @Suppress("SpellCheckingInspection")
                 if (!project.hasProperty("grade.ignoreproperties")) {
                     config.systemProperties.forEach { (prop, value) ->
@@ -168,17 +168,17 @@ class GradleGraderPlugin : Plugin<Project> {
                 }
                 it.setProperty("ignoreFailures", true)
                 it.outputs.upToDateWhen { false }
-                gradeTask.gatherTestInfo(it)
+                scoreTask.gatherTestInfo(it)
             }
 
             // Configure compilation tasks
             javaCompileTasks.forEach {
-                gradeTask.listenTo(it)
+                scoreTask.listenTo(it)
                 it.options.isFailOnError = false
                 it.outputs.upToDateWhen { false }
             }
             kotlinCompileTasks.forEach {
-                gradeTask.listenTo(it)
+                scoreTask.listenTo(it)
                 it.outputs.upToDateWhen { false }
             }
         }
@@ -188,22 +188,22 @@ class GradleGraderPlugin : Plugin<Project> {
             val cleanTasks = findSubprojects().map { it.tasks.getByName("clean") }
             if (config.forceClean) {
                 // Require a clean first
-                targetTask.dependsOn(cleanTasks)
+                gradeTask.dependsOn(cleanTasks)
             }
 
             // Depend on checkstyle
             if (config.checkstyle.enabled) {
                 checkstyleTask.mustRunAfter(reconfTask)
                 checkstyleTask.mustRunAfter(cleanTasks)
-                targetTask.dependsOn(checkstyleTask)
-                gradeTask.gatherCheckstyleInfo(checkstyleTask)
+                gradeTask.dependsOn(checkstyleTask)
+                scoreTask.gatherCheckstyleInfo(checkstyleTask)
             }
 
             if (config.detekt.enabled) {
                 detektTask.mustRunAfter(reconfTask)
                 detektTask.mustRunAfter(cleanTasks)
-                targetTask.dependsOn(detektTask)
-                gradeTask.gatherDetektInfo(detektTask)
+                gradeTask.dependsOn(detektTask)
+                scoreTask.gatherDetektInfo(detektTask)
             }
 
             // Get subproject tasks
@@ -225,7 +225,7 @@ class GradleGraderPlugin : Plugin<Project> {
                         testTasks[subproject] = test
                         test.mustRunAfter(cleanTasks)
                         test.mustRunAfter(reconfTask)
-                        targetTask.dependsOn(test)
+                        gradeTask.dependsOn(test)
                     }
                 }
             }
@@ -240,20 +240,21 @@ class GradleGraderPlugin : Plugin<Project> {
                     }.get(),
                 )
             }
-            gradeTask.dependsOn(reconfTask)
-            try {
-                project.property("checkpoint").toString().let {
-                    currentCheckpoint = it
-                    gradeTask.currentCheckpoint = currentCheckpoint
+            scoreTask.dependsOn(reconfTask)
+
+            currentCheckpoint = (
+                try {
+                    project.property("checkpoint")?.toString()
+                } catch (_: Exception) {
+                    null
                 }
-            } catch (_: Exception) {
-            }
-            if (gradeTask.currentCheckpoint == null && config.checkpointing.yamlFile != null) {
-                val configLoader = ObjectMapper(YAMLFactory()).also { it.registerKotlinModule() }
-                val checkpointConfig = configLoader.readValue<CheckpointConfig>(config.checkpointing.yamlFile!!)
-                currentCheckpoint = checkpointConfig.checkpoint
-                gradeTask.currentCheckpoint = currentCheckpoint
-            }
+                    ?: config.checkpointing.yamlFile?.let { file ->
+                        val configLoader = ObjectMapper(YAMLFactory()).also { it.registerKotlinModule() }
+                        configLoader.readValue<CheckpointConfig>(file).checkpoint
+                    }
+                )?.also {
+                    scoreTask.currentCheckpoint = it
+                }
 
             val evalPending = findSubprojects().toMutableList()
             evalPending.remove(project)
