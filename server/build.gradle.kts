@@ -2,7 +2,6 @@ import java.io.File
 import java.io.StringWriter
 import java.util.Properties
 
-group = "edu.illinois.cs.cs124"
 version = "2023.10.0"
 
 plugins {
