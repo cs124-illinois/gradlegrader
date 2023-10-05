@@ -3,7 +3,7 @@ import java.io.StringWriter
 import java.util.Properties
 
 group = "edu.illinois.cs.cs124"
-version = "2023.7.1"
+version = "2023.10.0"
 
 plugins {
     kotlin("jvm")
@@ -15,17 +15,17 @@ plugins {
 dependencies {
     ksp("com.squareup.moshi:moshi-kotlin-codegen:1.15.0")
 
-    implementation("io.ktor:ktor-server-netty:2.3.2")
+    implementation("io.ktor:ktor-server-netty:2.3.4")
     implementation("org.mongodb:mongodb-driver:3.12.14")
     implementation("com.squareup.moshi:moshi-kotlin:1.15.0")
     implementation("com.github.cs125-illinois:ktor-moshi:2022.9.0")
-    implementation("ch.qos.logback:logback-classic:1.4.8")
+    implementation("ch.qos.logback:logback-classic:1.4.11")
     implementation("com.uchuhimo:konf-core:1.1.2")
     implementation("com.uchuhimo:konf-yaml:1.1.2")
     implementation("io.github.microutils:kotlin-logging:3.0.5")
-    implementation("io.ktor:ktor-server-cors:2.3.2")
-    implementation("io.ktor:ktor-server-forwarded-header:2.3.2")
-    implementation("io.ktor:ktor-server-content-negotiation:2.3.2")
+    implementation("io.ktor:ktor-server-cors:2.3.4")
+    implementation("io.ktor:ktor-server-forwarded-header:2.3.4")
+    implementation("io.ktor:ktor-server-content-negotiation:2.3.4")
 }
 application {
     mainClass.set("edu.illinois.cs.cs125.gradlegrader.server.MainKt")
@@ -33,15 +33,15 @@ application {
 val dockerName = "cs124/gradlegrader"
 tasks.register<Copy>("dockerCopyJar") {
     from(tasks["shadowJar"].outputs)
-    into("${buildDir}/docker")
+    into(layout.buildDirectory.dir("docker"))
 }
 tasks.register<Copy>("dockerCopyDockerfile") {
     from("${projectDir}/Dockerfile")
-    into("${buildDir}/docker")
+    into(layout.buildDirectory.dir("docker"))
 }
 tasks.register<Exec>("dockerBuild") {
     dependsOn("dockerCopyJar", "dockerCopyDockerfile")
-    workingDir("${buildDir}/docker")
+    workingDir(layout.buildDirectory.dir("docker"))
     environment("DOCKER_BUILDKIT", "1")
     commandLine(
         ("docker build . " +
@@ -51,7 +51,7 @@ tasks.register<Exec>("dockerBuild") {
 }
 tasks.register<Exec>("dockerPush") {
     dependsOn("dockerCopyJar", "dockerCopyDockerfile")
-    workingDir("${buildDir}/docker")
+    workingDir(layout.buildDirectory.dir("docker"))
     commandLine(
         ("docker buildx build . --platform=linux/amd64,linux/arm64/v8 " +
             "--builder multiplatform " +
@@ -82,5 +82,10 @@ afterEvaluate {
     }
     tasks.named("lintKotlinGeneratedByKspKotlin") {
         enabled = false
+    }
+}
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
     }
 }

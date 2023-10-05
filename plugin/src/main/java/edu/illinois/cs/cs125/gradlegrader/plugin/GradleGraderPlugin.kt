@@ -236,7 +236,7 @@ class GradleGraderPlugin : Plugin<Project> {
             if (config.forceClean) {
                 reconfTask.dependsOn(
                     project.tasks.register("clearBuildDir", Delete::class.java) { delTask ->
-                        delTask.delete = setOf(project.buildDir)
+                        delTask.delete = setOf(project.layout.buildDirectory.get())
                     }.get(),
                 )
             }
