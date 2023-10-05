@@ -84,11 +84,9 @@ open class CheckpointPolicy {
  */
 open class CheckstylePolicy {
     var enabled: Boolean = false
-    var configFile: File? = null
     var exclude: List<String> = listOf("**/gen/**", "**/R.java", "**/BuildConfig.java")
     var include: List<String> = listOf("**/*.java")
     var points: Int = 0
-    var version: String = "8.18"
 
     fun exclude(vararg patterns: String) {
         exclude = patterns.toList()

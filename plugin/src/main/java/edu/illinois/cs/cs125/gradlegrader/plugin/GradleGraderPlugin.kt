@@ -128,7 +128,6 @@ class GradleGraderPlugin : Plugin<Project> {
             // Configure checkstyle
             if (config.checkstyle.enabled) {
                 val checkstyleConfig = project.extensions.getByType(CheckstyleExtension::class.java)
-                checkstyleConfig.toolVersion = config.checkstyle.version
                 checkstyleConfig.reportsDir = project.file("build/reports/checkstyle")
                 checkstyleTask.ignoreFailures = true
                 checkstyleTask.outputs.upToDateWhen { false }
@@ -136,7 +135,7 @@ class GradleGraderPlugin : Plugin<Project> {
                 checkstyleTask.setIncludes(config.checkstyle.include)
                 checkstyleTask.setExcludes(config.checkstyle.exclude)
                 checkstyleTask.configFile =
-                    config.checkstyle.configFile ?: exitManager.fail("checkstyle.configFile not specified")
+                    checkstyleConfig.configFile ?: exitManager.fail("checkstyle.configFile not specified")
                 checkstyleTask.classpath = project.files()
                 scoreTask.listenTo(checkstyleTask)
             }
