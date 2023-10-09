@@ -134,7 +134,9 @@ fun Application.gradlegrader() {
         }
     }
     intercept(ApplicationCallPipeline.Fallback) {
-        if (call.response.status() == null) { call.respond(HttpStatusCode.NotFound) }
+        if (call.response.status() == null) {
+            call.respond(HttpStatusCode.NotFound)
+        }
     }
 }
 

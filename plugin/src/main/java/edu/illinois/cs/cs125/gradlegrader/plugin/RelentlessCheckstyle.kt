@@ -6,7 +6,7 @@ import org.gradle.api.plugins.quality.Checkstyle
  * A checkstyle Gradle task that won't throw an exception if unable to parse a file.
  * That allows the Java compilation task to run and show its error message.
  */
-open class RelentlessCheckstyle : Checkstyle() {
+abstract class RelentlessCheckstyle : Checkstyle() {
 
     /**
      * Entry point for the task.

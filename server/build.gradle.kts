@@ -17,7 +17,7 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:2.3.5")
     implementation("org.mongodb:mongodb-driver:3.12.14")
     implementation("com.squareup.moshi:moshi-kotlin:1.15.0")
-    implementation("com.github.cs124-illinois:ktor-moshi:2023.10.0")
+    implementation("com.github.cs124-illinois:ktor-moshi:2023.10.1")
     implementation("ch.qos.logback:logback-classic:1.4.11")
     implementation("com.uchuhimo:konf-core:1.1.2")
     implementation("com.uchuhimo:konf-yaml:1.1.2")
