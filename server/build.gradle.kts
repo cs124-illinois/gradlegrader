@@ -2,7 +2,7 @@ import java.io.File
 import java.io.StringWriter
 import java.util.Properties
 
-version = "2023.10.0"
+version = "2023.10.1"
 
 plugins {
     kotlin("jvm")
