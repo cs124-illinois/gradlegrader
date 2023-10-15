@@ -39,13 +39,6 @@ fun File.fingerprint(): String {
     ).toString(16).padStart(32, '0')
 }
 
-fun String.addFingerprint(): String = MessageDigest.getInstance("MD5").let { md ->
-    val filtered = lines().filter {
-        !it.startsWith("// md5: ")
-    }.joinToString("\n")
-    return BigInteger(1, md.digest(filtered.toByteArray())).toString(16).padStart(32, '0')
-}
-
 abstract class FingerprintTask : DefaultTask() {
     init {
         group = "Publishing"

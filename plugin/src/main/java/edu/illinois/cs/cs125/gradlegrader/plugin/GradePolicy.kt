@@ -31,6 +31,7 @@ open class GradePolicyExtension {
     var subprojects: List<Project>? = null
     var systemProperties: MutableMap<String, String> = mutableMapOf()
     var vcs: VcsPolicy = VcsPolicy()
+    var ignoreFingerprintMismatch: Boolean = false
 
     fun checkpoint(action: Action<in CheckpointPolicy>) {
         action.execute(checkpointing)

@@ -2,6 +2,7 @@ package edu.illinois.cs.cs125.gradlegrader.plugin
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
+import org.gradle.api.Project
 import org.gradle.api.file.FileTree
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.TaskAction
@@ -10,7 +11,8 @@ import java.io.File
 fun File.checkFingerprint(base: File) {
     val filename = relativeTo(base).path
 
-    val fileFingerprint = retrieveFingerprint() ?: throw GradleException("Could not find fingerprint for file $filename")
+    val fileFingerprint =
+        retrieveFingerprint() ?: throw GradleException("Could not find fingerprint for file $filename")
     val contentFingerprint = fingerprint()
     if (fileFingerprint != contentFingerprint) {
         throw GradleException(
@@ -19,6 +21,12 @@ fun File.checkFingerprint(base: File) {
         )
     }
 }
+
+fun Project.checkFingerprints(
+    inputFiles: List<File> = fileTree("src/test").also {
+        it.include("**/*Test.java", "**/*Test.kt")
+    }.toList(),
+) = inputFiles.forEach { file -> file.checkFingerprint(rootDir) }
 
 abstract class CheckFingerprintTask : DefaultTask() {
     init {
@@ -32,10 +40,5 @@ abstract class CheckFingerprintTask : DefaultTask() {
     }
 
     @TaskAction
-    fun check() {
-        val base = project.rootDir
-        inputFiles.forEach {
-            it.checkFingerprint(base)
-        }
-    }
+    fun check() = project.checkFingerprints(inputFiles.toList())
 }

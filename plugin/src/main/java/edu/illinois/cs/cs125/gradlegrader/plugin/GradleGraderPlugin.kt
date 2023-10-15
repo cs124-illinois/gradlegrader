@@ -1,4 +1,5 @@
 @file:SuppressWarnings("NewApi")
+@file:Suppress("UnstableApiUsage")
 
 package edu.illinois.cs.cs125.gradlegrader.plugin
 
@@ -36,6 +37,13 @@ class GradleGraderPlugin : Plugin<Project> {
         val config = project.extensions.create("gradlegrader", GradePolicyExtension::class.java)
         val exitManager = ExitManager(config)
 
+        val fingerprintingFailed = !config.ignoreFingerprintMismatch && try {
+            project.checkFingerprints()
+            false
+        } catch (e: Exception) {
+            true
+        }
+
         fun findSubprojects(): List<Project> {
             return config.subprojects ?: listOf(project)
         }
@@ -51,44 +59,19 @@ class GradleGraderPlugin : Plugin<Project> {
 
         val gradeTask = project.tasks.register("grade").get()
         val scoreTask: ScoreTask = project.tasks.register("score", ScoreTask::class.java).get()
+        scoreTask.fingerprintingFailed = fingerprintingFailed
         scoreTask.mustRunAfter(gradeTask)
+        gradeTask.finalizedBy(scoreTask)
 
         project.tasks.register("fingerprintTests", FingerprintTask::class.java)
-        project.tasks.register("checkTestFingerprints", CheckFingerprintTask::class.java)
+        project.tasks.register("checkTestFingerprints", CheckFingerprintTask::class.java).get()
 
-        val reconfTask = project.task("prepareForGrading").doLast {
-            // Check projects' test tasks
-            findSubprojects().forEach { subproject ->
-                if (!testTasks.containsKey(subproject)) {
-                    exitManager.fail("Couldn't find a test task for project ${subproject.path}")
-                }
+        var uncommittedChanges: Boolean? = null
+        fun checkForUncommitedChanges(currentCheckpoint: String): Boolean {
+            if (uncommittedChanges != null) {
+                return uncommittedChanges!!
             }
-
-            // Check contributors file
-            if (config.identification.enabled) {
-                val txtFile = config.identification.txtFile!!
-                if (!txtFile.exists()) {
-                    exitManager.fail("Missing contributor identification file: ${txtFile.absolutePath}")
-                }
-                val partners = Files.readAllLines(txtFile.toPath()).filter { it.isNotBlank() }
-                if (!config.identification.countLimit.isSatisfiedBy(partners.size)) {
-                    exitManager.fail(
-                        config.identification.message
-                            ?: "Invalid number of contributors (${partners.size}) in identification file: ${txtFile.absolutePath}",
-                    )
-                }
-                partners.forEach {
-                    if (!config.identification.validate.isSatisfiedBy(it)) {
-                        exitManager.fail(
-                            config.identification.message
-                                ?: "Invalid contributor format: $it",
-                        )
-                    }
-                }
-                scoreTask.contributors = partners
-            }
-
-            // Check VCS
+            uncommittedChanges = false
             if (config.vcs.git) {
                 val gitRepo = try {
                     val ceiling =
@@ -118,11 +101,54 @@ class GradleGraderPlugin : Plugin<Project> {
                     val clean =
                         (status.added.size + status.changed.size + status.removed.size + status.modified.size + status.missing.size) == 0
                     if (checkpointScoreInfo.increased && checkpointScoreInfo.lastSeenCommit == lastCommit && !clean) {
-                        exitManager.fail("The autograder will not run until you commit the changes that increased your score.")
+                        uncommittedChanges = true
                     }
                     scoreTask.scoreInfo = scoreInfo
                     scoreTask.repoIsClean = clean
                 }
+            }
+            return uncommittedChanges!!
+        }
+
+        val reconfTask = project.task("prepareForGrading")
+        reconfTask.doLast {
+            if (fingerprintingFailed) {
+                return@doLast
+            }
+
+            if (checkForUncommitedChanges(currentCheckpoint!!)) {
+                exitManager.fail("The autograder will not run until you commit the changes that increased your score.")
+            }
+
+            // Check projects' test tasks
+            findSubprojects().forEach { subproject ->
+                if (!testTasks.containsKey(subproject)) {
+                    exitManager.fail("Couldn't find a test task for project ${subproject.path}")
+                }
+            }
+
+            // Check contributors file
+            if (config.identification.enabled) {
+                val txtFile = config.identification.txtFile!!
+                if (!txtFile.exists()) {
+                    exitManager.fail("Missing contributor identification file: ${txtFile.absolutePath}")
+                }
+                val partners = Files.readAllLines(txtFile.toPath()).filter { it.isNotBlank() }
+                if (!config.identification.countLimit.isSatisfiedBy(partners.size)) {
+                    exitManager.fail(
+                        config.identification.message
+                            ?: "Invalid number of contributors (${partners.size}) in identification file: ${txtFile.absolutePath}",
+                    )
+                }
+                partners.forEach {
+                    if (!config.identification.validate.isSatisfiedBy(it)) {
+                        exitManager.fail(
+                            config.identification.message
+                                ?: "Invalid contributor format: $it",
+                        )
+                    }
+                }
+                scoreTask.contributors = partners
             }
 
             // Configure checkstyle
@@ -183,7 +209,15 @@ class GradleGraderPlugin : Plugin<Project> {
         }
 
         // Logic that depends on all projects having been evaluated
-        val onAllProjectsReady = {
+        fun onAllProjectsReady() {
+            if (fingerprintingFailed) {
+                return
+            }
+
+            if (checkForUncommitedChanges(currentCheckpoint!!)) {
+                return
+            }
+
             val cleanTasks = findSubprojects().map { it.tasks.getByName("clean") }
             if (config.forceClean) {
                 // Require a clean first

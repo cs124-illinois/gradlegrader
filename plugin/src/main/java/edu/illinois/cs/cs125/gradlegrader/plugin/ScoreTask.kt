@@ -74,6 +74,9 @@ open class ScoreTask : DefaultTask() {
     @Input
     var repoIsClean: Boolean = false
 
+    @Input
+    var fingerprintingFailed: Boolean = false
+
     /**
      * Sets up a listener to the specified task's output.
      * @param task the task to listen to
@@ -134,7 +137,12 @@ open class ScoreTask : DefaultTask() {
     @Suppress("unused")
     fun run() {
         val config = project.extensions.getByType(GradePolicyExtension::class.java)
-        // val exitManager = ExitManager(config)
+
+        val exitManager = ExitManager(config)
+        if (fingerprintingFailed) {
+            exitManager.fail("The autograder will not run until you restore the original test suites.")
+        }
+
         val documentBuilder = DocumentBuilderFactory.newInstance().apply {
             isValidating = false
             isNamespaceAware = false
