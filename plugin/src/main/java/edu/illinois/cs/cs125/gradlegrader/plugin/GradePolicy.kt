@@ -35,27 +35,34 @@ open class GradePolicyExtension {
     fun checkpoint(action: Action<in CheckpointPolicy>) {
         action.execute(checkpointing)
     }
+
     fun checkstyle(action: Action<in CheckstylePolicy>) {
         checkstyle.enabled = true
         action.execute(checkstyle)
     }
+
     fun detekt(action: Action<in DetektPolicy>) {
         detekt.enabled = true
         action.execute(detekt)
     }
+
     fun identification(action: Action<in IdentificationPolicy>) {
         identification.enabled = true
         action.execute(identification)
     }
+
     fun reporting(action: Action<in ReportingPolicy>) {
         action.execute(reporting)
     }
+
     fun subprojects(vararg projects: Project) {
         subprojects = projects.asList()
     }
+
     fun systemProperty(name: String, value: String) {
         systemProperties[name] = value
     }
+
     fun vcs(action: Action<in VcsPolicy>) {
         action.execute(vcs)
     }
@@ -71,9 +78,11 @@ open class CheckpointPolicy {
     fun configureTests(action: (String, Test) -> Unit) {
         testConfigureAction = BiConsumer { checkpoint, test -> action(checkpoint, test) }
     }
+
     fun configureTests(action: BiConsumer<String, Test>) {
         testConfigureAction = action
     }
+
     fun configureTests(action: Closure<Void>) {
         testConfigureAction = BiConsumer { checkpoint, test -> action.call(checkpoint, test) }
     }
@@ -91,6 +100,7 @@ open class CheckstylePolicy {
     fun exclude(vararg patterns: String) {
         exclude = patterns.toList()
     }
+
     fun include(vararg patterns: String) {
         include = patterns.toList()
     }
@@ -130,20 +140,25 @@ open class ReportingPolicy {
     fun post(action: Action<in PostReportingPolicy>) {
         action.execute(post)
     }
+
     fun post(action: Closure<in PostReportingPolicy>) {
         action.delegate = post
         action.run()
     }
+
     fun printPretty(action: Action<in PrettyReportingPolicy>) {
         action.execute(printPretty)
     }
+
     fun printPretty(action: Closure<in PrettyReportingPolicy>) {
         action.delegate = printPretty
         action.run()
     }
+
     fun tag(name: String, value: String) {
         tags[name] = value
     }
+
     fun tag(name: String, value: Int) {
         tags[name] = value
     }
@@ -159,6 +174,7 @@ open class PostReportingPolicy {
     fun includeFiles(vararg files: File) {
         includeFiles = files.asList()
     }
+
     fun includeFiles(files: ConfigurableFileCollection) {
         includeFiles = files.toList()
     }
