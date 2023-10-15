@@ -8,20 +8,20 @@ import java.io.File
 import java.math.BigInteger
 import java.security.MessageDigest
 
-private const val md5Prefix = "// md5:"
+private const val MD5PREFIX = "// md5:"
 
 fun File.retrieveFingerprint(): String? {
     val lines = readText().trimEnd().lines()
-    return lines.find { it.startsWith(md5Prefix) }?.removePrefix(md5Prefix)?.trim()
+    return lines.find { it.startsWith(MD5PREFIX) }?.removePrefix(MD5PREFIX)?.trim()
 }
 
 fun File.linesToFingerprint(): List<String> {
     val lines = readText().trimEnd().lines()
-    val hasFingerprint = lines.find { it.startsWith(md5Prefix) } != null
+    val hasFingerprint = lines.find { it.startsWith(MD5PREFIX) } != null
     if (hasFingerprint) {
-        check(lines.last().startsWith(md5Prefix)) { "Fingerprint should be on the final non-blank line" }
+        check(lines.last().startsWith(MD5PREFIX)) { "Fingerprint should be on the final non-blank line" }
     }
-    return lines.filter { !it.startsWith(md5Prefix) }
+    return lines.filter { !it.startsWith(MD5PREFIX) }
 }
 
 fun File.addFingerprint() {
