@@ -26,14 +26,13 @@ open class GradePolicyExtension {
     var forceClean: Boolean = true
     var identification: IdentificationPolicy = IdentificationPolicy()
     var keepDaemon: Boolean = true
-    var maxPoints: Int? = null
     var reporting: ReportingPolicy = ReportingPolicy()
     var subprojects: List<Project>? = null
     var systemProperties: MutableMap<String, String> = mutableMapOf()
     var vcs: VcsPolicy = VcsPolicy()
+    var points: PointsPolicy = PointsPolicy()
     var earlyDeadline: EarlyDeadlinePolicy = EarlyDeadlinePolicy()
     var ignoreFingerprintMismatch: Boolean = false
-    var totalPoints: Int? = null
 
     fun checkpoint(action: Action<in CheckpointPolicy>) {
         action.execute(checkpointing)
@@ -72,6 +71,10 @@ open class GradePolicyExtension {
 
     fun vcs(action: Action<in VcsPolicy>) {
         action.execute(vcs)
+    }
+
+    fun points(action: Action<in PointsPolicy>) {
+        action.execute(points)
     }
 }
 
@@ -211,4 +214,13 @@ open class PrettyReportingPolicy {
 open class VcsPolicy {
     var git: Boolean = false
     var requireCommit: Boolean = false
+}
+
+/**
+ * Class to hold points settings.
+ */
+open class PointsPolicy {
+    var total: Int? = null
+    var max: Int? = null
+    var failOnPointMismatch = true
 }

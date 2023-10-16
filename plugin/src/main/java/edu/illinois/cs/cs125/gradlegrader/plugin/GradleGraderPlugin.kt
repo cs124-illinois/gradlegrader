@@ -111,6 +111,7 @@ class GradleGraderPlugin : Plugin<Project> {
         }
 
         val reconfTask = project.task("prepareForGrading")
+        reconfTask.finalizedBy(scoreTask)
         reconfTask.doLast {
             if (fingerprintingFailed) {
                 return@doLast

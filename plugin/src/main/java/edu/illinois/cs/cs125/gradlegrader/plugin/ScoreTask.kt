@@ -323,8 +323,8 @@ open class ScoreTask : DefaultTask() {
 
         // Scoring is done
         var showRawPointsEarned: Int? = null
-        config.maxPoints?.let {
-            pointsPossible = it
+        config.points.max?.let { max ->
+            pointsPossible = max
             if (pointsEarned > pointsPossible) {
                 showRawPointsEarned = pointsEarned
                 pointsEarned = pointsPossible
@@ -386,11 +386,13 @@ open class ScoreTask : DefaultTask() {
         }
 
         val earlyPoints = (config.earlyDeadline.points?.invoke(currentCheckpoint!!) ?: 0)
-        config.totalPoints?.let { configuredTotal ->
-            if (compiled && configuredTotal != pointsPossible + earlyPoints) {
-                exitManager.fail("Points don't add up: $configuredTotal != ${pointsPossible - earlyPoints}")
-            }
+        val pointMismatch = config.points.total?.let { configuredTotal ->
+            compiled && configuredTotal != pointsPossible + earlyPoints
         }
+        if (pointMismatch == true && config.points.failOnPointMismatch) {
+            exitManager.fail("Points don't add up: ${config.points.total!!} != ${pointsPossible - earlyPoints}")
+        }
+
         // Make the pretty report
         if (config.reporting.printPretty.enabled) {
             val headerLine = "".padEnd(80, '-')
@@ -434,7 +436,7 @@ open class ScoreTask : DefaultTask() {
             println(headerLine)
 
             if (config.reporting.printPretty.showTotal) {
-                val totalPointsPossible = config.totalPoints ?: (pointsPossible + earlyPoints)
+                val totalPointsPossible = config.points.total ?: (pointsPossible + earlyPoints)
                 val totalLine = "Total".padEnd(31) +
                     pointsEarned.toString().padStart(5) +
                     " / " +

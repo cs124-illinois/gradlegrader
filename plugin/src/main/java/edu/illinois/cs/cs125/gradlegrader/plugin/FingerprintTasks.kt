@@ -1,6 +1,8 @@
 package edu.illinois.cs.cs125.gradlegrader.plugin
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
+import org.gradle.api.Project
 import org.gradle.api.file.FileTree
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.TaskAction
@@ -9,6 +11,27 @@ import java.math.BigInteger
 import java.security.MessageDigest
 
 private const val MD5PREFIX = "// md5:"
+
+private fun Project.fingerprintFiles() = fileTree("src/test").also {
+    it.include("**/*.java", "**/*.kt")
+}
+
+fun Project.checkFingerprints(inputFiles: List<File> = fingerprintFiles().toList()) =
+    inputFiles.forEach { file -> file.checkFingerprint(rootDir) }
+
+fun File.checkFingerprint(base: File) {
+    val filename = relativeTo(base).path
+
+    val fileFingerprint =
+        retrieveFingerprint() ?: throw GradleException("Could not find fingerprint for file $filename")
+    val contentFingerprint = fingerprint()
+    if (fileFingerprint != contentFingerprint) {
+        throw GradleException(
+            "Fingerprint mismatch for test file $filename. " +
+                "Undo your changes, restore from Git, or download again.",
+        )
+    }
+}
 
 fun File.retrieveFingerprint(): String? {
     val lines = readText().trimEnd().lines()
@@ -46,9 +69,7 @@ abstract class FingerprintTask : DefaultTask() {
     }
 
     @InputFiles
-    val inputFiles: FileTree = project.fileTree("src/test").also {
-        it.include("**/*Test.java", "**/*Test.kt")
-    }
+    val inputFiles: FileTree = project.fingerprintFiles()
 
     @TaskAction
     fun fingerprint() {
@@ -58,3 +79,17 @@ abstract class FingerprintTask : DefaultTask() {
         }
     }
 }
+
+abstract class CheckFingerprintTask : DefaultTask() {
+    init {
+        group = "Verification"
+        description = "Check test suite fingerprints."
+    }
+
+    @InputFiles
+    val inputFiles: FileTree = project.fingerprintFiles()
+
+    @TaskAction
+    fun check() = project.checkFingerprints(inputFiles.toList())
+}
+
