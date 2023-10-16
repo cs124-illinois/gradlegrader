@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.github.cs124-illinois"
-version = "2023.10.5"
+version = "2023.10.6"
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:1.9.0")

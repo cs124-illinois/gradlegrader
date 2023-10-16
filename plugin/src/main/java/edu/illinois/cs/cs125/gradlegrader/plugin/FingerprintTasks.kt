@@ -35,7 +35,7 @@ fun File.checkFingerprint(base: File) {
 
 fun File.retrieveFingerprint(): String? {
     val lines = readText().trimEnd().lines()
-    return lines.find { it.startsWith(MD5PREFIX) }?.removePrefix(MD5PREFIX)?.trim()
+    return lines.find { it.startsWith(MD5PREFIX) }?.removePrefix(MD5PREFIX)?.trim()?.split(" ")?.first()
 }
 
 fun File.linesToFingerprint(): List<String> {
@@ -50,7 +50,7 @@ fun File.linesToFingerprint(): List<String> {
 fun File.addFingerprint() {
     val linesToFingerprint = linesToFingerprint()
     val fingerPrint = fingerprint()
-    val fingerprintedLines = linesToFingerprint + "// md5: $fingerPrint\n"
+    val fingerprintedLines = linesToFingerprint + "// md5: $fingerPrint // DO NOT REMOVE THIS LINE\n"
     writeText(fingerprintedLines.joinToString("\n"))
 }
 
@@ -92,4 +92,3 @@ abstract class CheckFingerprintTask : DefaultTask() {
     @TaskAction
     fun check() = project.checkFingerprints(inputFiles.toList())
 }
-

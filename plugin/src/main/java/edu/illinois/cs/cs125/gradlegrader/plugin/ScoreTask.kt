@@ -77,6 +77,9 @@ open class ScoreTask : DefaultTask() {
     @Input
     var fingerprintingFailed: Boolean = false
 
+    @Input
+    var untrackedFiles: Set<String> = setOf()
+
     /**
      * Sets up a listener to the specified task's output.
      * @param task the task to listen to
@@ -141,6 +144,12 @@ open class ScoreTask : DefaultTask() {
         val exitManager = ExitManager(config)
         if (fingerprintingFailed) {
             exitManager.fail("The autograder will not run until you restore the original test suites.")
+        }
+        if (config.vcs.git && untrackedFiles.isNotEmpty()) {
+            exitManager.fail(
+                "The autograder will not run you add all files to your repository. " +
+                    "Currently missing: ${untrackedFiles.joinToString(", ")}."
+            )
         }
 
         val documentBuilder = DocumentBuilderFactory.newInstance().apply {

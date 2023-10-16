@@ -66,6 +66,20 @@ class GradleGraderPlugin : Plugin<Project> {
         project.tasks.register("fingerprintTests", FingerprintTask::class.java)
         project.tasks.register("checkTestFingerprints", CheckFingerprintTask::class.java).get()
 
+        val gitRepo = try {
+            val ceiling =
+                project.rootProject.projectDir.parentFile // Go an extra level up to work around a JGit bug
+            FileRepositoryBuilder().setMustExist(true).addCeilingDirectory(ceiling)
+                .findGitDir(project.projectDir).build()
+        } catch (e: Exception) {
+            null
+        }
+
+        val untrackedFiles = gitRepo?.let {
+            Git.open(it.workTree).status().call().untracked
+        } ?: setOf()
+        scoreTask.untrackedFiles = untrackedFiles
+
         var uncommittedChanges: Boolean? = null
         fun checkForUncommitedChanges(currentCheckpoint: String): Boolean {
             if (uncommittedChanges != null) {
@@ -73,12 +87,7 @@ class GradleGraderPlugin : Plugin<Project> {
             }
             uncommittedChanges = false
             if (config.vcs.git) {
-                val gitRepo = try {
-                    val ceiling =
-                        project.rootProject.projectDir.parentFile // Go an extra level up to work around a JGit bug
-                    FileRepositoryBuilder().setMustExist(true).addCeilingDirectory(ceiling)
-                        .findGitDir(project.projectDir).build()
-                } catch (_: Exception) {
+                if (gitRepo == null) {
                     exitManager.fail("Grader Git integration is enabled but the project isn't a Git repository.")
                 }
                 scoreTask.gitConfig = gitRepo.config
@@ -92,7 +101,9 @@ class GradleGraderPlugin : Plugin<Project> {
                             VcsScoreInfo::class.java,
                         )
                         @Suppress("SENSELESS_COMPARISON") // Possible for checkpoints to be null if loaded by Gson
-                        if (loadedInfo.checkpoints != null) scoreInfo = loadedInfo
+                        if (loadedInfo.checkpoints != null) {
+                            scoreInfo = loadedInfo
+                        }
                     } catch (ignored: Exception) {
                     }
                     val checkpointScoreInfo =
@@ -116,7 +127,12 @@ class GradleGraderPlugin : Plugin<Project> {
             if (fingerprintingFailed) {
                 return@doLast
             }
-
+            if (config.vcs.git && untrackedFiles.isNotEmpty()) {
+                exitManager.fail(
+                    "The autograder will not run you add all files to your repository. " +
+                        "Currently missing: ${untrackedFiles.joinToString(", ")}."
+                )
+            }
             if (checkForUncommitedChanges(currentCheckpoint!!)) {
                 exitManager.fail("The autograder will not run until you commit the changes that increased your score.")
             }
@@ -214,7 +230,9 @@ class GradleGraderPlugin : Plugin<Project> {
             if (fingerprintingFailed) {
                 return
             }
-
+            if (config.vcs.git && untrackedFiles.isNotEmpty()) {
+                return
+            }
             if (checkForUncommitedChanges(currentCheckpoint!!)) {
                 return
             }
@@ -287,8 +305,8 @@ class GradleGraderPlugin : Plugin<Project> {
                         configLoader.readValue<CheckpointConfig>(file).checkpoint
                     }
                 )?.also {
-                scoreTask.currentCheckpoint = it
-            }
+                    scoreTask.currentCheckpoint = it
+                }
 
             val evalPending = findSubprojects().toMutableList()
             evalPending.remove(project)
