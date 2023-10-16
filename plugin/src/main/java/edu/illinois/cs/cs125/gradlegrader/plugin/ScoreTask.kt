@@ -211,7 +211,7 @@ open class ScoreTask : DefaultTask() {
                     "description",
                     gradedAnnotation.friendlyName.ifEmpty { methodName },
                 )
-                methodResults.addProperty("explanation", testName + (if (passed) " passed" else " failed"))
+                methodResults.addProperty("explanation", "${(if (passed) "Passed" else "Failed")} $testName")
                 methodResults.addProperty("type", "test")
                 scoringResults.add(methodResults)
                 pointsPossible += gradedAnnotation.points
@@ -221,9 +221,9 @@ open class ScoreTask : DefaultTask() {
 
         val testingSucceeded = project.tasks.getByName("grade").state.executed
 
+        var compiled = false
         gradedTests.forEach { task ->
             // Process the report XML files with a class loader that can access test classes
-            var compiled = false
             if (testingSucceeded) {
                 URLClassLoader(
                     task.classpath.map { it.toURI().toURL() }.toTypedArray(),
@@ -249,7 +249,7 @@ open class ScoreTask : DefaultTask() {
                 compileFailResult.addProperty("description", "Compiler")
                 compileFailResult.addProperty("pointsPossible", 0)
                 compileFailResult.addProperty("pointsEarned", 0)
-                compileFailResult.addProperty("explanation", "${task.project.name} didn't compile")
+                compileFailResult.addProperty("explanation", "Code didn't compile")
                 compileFailResult.addProperty("type", "compileError")
                 scoringResults.add(compileFailResult)
             }
@@ -259,60 +259,66 @@ open class ScoreTask : DefaultTask() {
         // Load checkstyle XML
         if (config.checkstyle.enabled) {
             pointsPossible += config.checkstyle.points
-            val checkstyleResults = JsonObject()
-            val ran = checkstyleOutputFile!!.exists() && checkstyleOutputFile!!.length() > 0
-            checkstyleResults.addProperty("ran", ran)
-            var checkstylePoints = 0
-            if (ran) {
-                val xml = documentBuilder.parse(checkstyleOutputFile)
-                val passed = xml.getElementsByTagName("error").length == 0
-                checkstyleResults.addProperty("passed", passed)
-                checkstyleResults.addProperty(
-                    "explanation",
-                    if (passed) "No checkstyle errors were reported" else "checkstyle found style issues",
-                )
-                if (passed) checkstylePoints = config.checkstyle.points
-            } else {
-                checkstyleResults.addProperty("passed", false)
-                checkstyleResults.addProperty("explanation", "checkstyle crashed")
-                // If checkstyle crashed, it leaked the file handle
-                // Future cleans will crash and fail the build unless we bring down this process
-                // exitProcessWhenDone = true
+            if (compiled) {
+                val checkstyleResults = JsonObject()
+                val ran = checkstyleOutputFile!!.exists() && checkstyleOutputFile!!.length() > 0
+                checkstyleResults.addProperty("ran", ran)
+                var checkstylePoints = 0
+                if (ran) {
+                    val xml = documentBuilder.parse(checkstyleOutputFile)
+                    val passed = xml.getElementsByTagName("error").length == 0
+                    checkstyleResults.addProperty("passed", passed)
+                    checkstyleResults.addProperty(
+                        "explanation",
+                        if (passed) "Passed checkstyle" else "Failed checkstyle",
+                    )
+                    if (passed) {
+                        checkstylePoints = config.checkstyle.points
+                    }
+                } else {
+                    checkstyleResults.addProperty("passed", false)
+                    checkstyleResults.addProperty("explanation", "checkstyle crashed")
+                    // If checkstyle crashed, it leaked the file handle
+                    // Future cleans will crash and fail the build unless we bring down this process
+                    // exitProcessWhenDone = true
+                }
+                checkstyleResults.addProperty("description", "checkstyle")
+                checkstyleResults.addProperty("pointsEarned", checkstylePoints)
+                checkstyleResults.addProperty("pointsPossible", config.checkstyle.points)
+                checkstyleResults.addProperty("type", "checkstyle")
+                pointsEarned += checkstylePoints
+                scoringResults.add(checkstyleResults)
             }
-            checkstyleResults.addProperty("description", "checkstyle")
-            checkstyleResults.addProperty("pointsEarned", checkstylePoints)
-            checkstyleResults.addProperty("pointsPossible", config.checkstyle.points)
-            checkstyleResults.addProperty("type", "checkstyle")
-            pointsEarned += checkstylePoints
-            scoringResults.add(checkstyleResults)
         }
 
         // Load detekt XML
         if (config.detekt.enabled) {
             pointsPossible += config.detekt.points
-            val detektResults = JsonObject()
-            val ran = detektOutputFile!!.exists() && detektOutputFile!!.length() > 0
-            detektResults.addProperty("ran", ran)
-            var detektPoints = 0
-            if (ran) {
-                val xml = documentBuilder.parse(detektOutputFile)
-                val passed = xml.getElementsByTagName("error").length == 0
-                detektResults.addProperty("passed", passed)
-                detektResults.addProperty(
-                    "explanation",
-                    if (passed) "No detekt errors were reported" else "detekt found issues",
-                )
-                if (passed) detektPoints = config.detekt.points
-            } else {
-                detektResults.addProperty("passed", false)
-                detektResults.addProperty("explanation", "detekt crashed")
+            if (compiled) {
+                val detektResults = JsonObject()
+                val ran = detektOutputFile!!.exists() && detektOutputFile!!.length() > 0
+                detektResults.addProperty("ran", ran)
+                var detektPoints = 0
+                if (ran) {
+                    val xml = documentBuilder.parse(detektOutputFile)
+                    val passed = xml.getElementsByTagName("error").length == 0
+                    detektResults.addProperty("passed", passed)
+                    detektResults.addProperty(
+                        "explanation",
+                        if (passed) "Passed detekt" else "Failed detekt",
+                    )
+                    if (passed) detektPoints = config.detekt.points
+                } else {
+                    detektResults.addProperty("passed", false)
+                    detektResults.addProperty("explanation", "detekt crashed")
+                }
+                detektResults.addProperty("description", "detekt")
+                detektResults.addProperty("pointsEarned", detektPoints)
+                detektResults.addProperty("pointsPossible", config.detekt.points)
+                detektResults.addProperty("type", "detekt")
+                pointsEarned += detektPoints
+                scoringResults.add(detektResults)
             }
-            detektResults.addProperty("description", "detekt")
-            detektResults.addProperty("pointsEarned", detektPoints)
-            detektResults.addProperty("pointsPossible", config.detekt.points)
-            detektResults.addProperty("type", "detekt")
-            pointsEarned += detektPoints
-            scoringResults.add(detektResults)
         }
 
         // Scoring is done
@@ -379,38 +385,86 @@ open class ScoreTask : DefaultTask() {
             println(resultJson)
         }
 
+        val earlyPoints = (config.earlyDeadline.points?.invoke(currentCheckpoint!!) ?: 0)
+        config.totalPoints?.let { configuredTotal ->
+            if (compiled && configuredTotal != pointsPossible + earlyPoints) {
+                exitManager.fail("Points don't add up: $configuredTotal != ${pointsPossible - earlyPoints}")
+            }
+        }
         // Make the pretty report
         if (config.reporting.printPretty.enabled) {
-            val line = "".padEnd(80, '-')
-            println(line)
-            config.reporting.printPretty.title?.let {
-                println(it)
-                println(line)
-            }
+            val headerLine = "".padEnd(80, '-')
+            println(headerLine)
+
+            config.reporting.printPretty.title?.let { title -> println("$title\n$headerLine") }
+
             scoringResults.forEach {
-                print(it.asJsonObject["description"].asString.take(30).padEnd(31, ' '))
-                print(it.asJsonObject["pointsEarned"].asInt.toString().padEnd(5, ' '))
-                println(it.asJsonObject["explanation"].asString)
+                val resultPointsEarned = it.asJsonObject["pointsEarned"].asInt
+                val resultPointsPossible = it.asJsonObject["pointsPossible"].asInt
+
+                val resultLine = it.asJsonObject["description"].asString.take(30).padEnd(31) +
+                    resultPointsPossible.let { points ->
+                        if (points == 0) {
+                            ""
+                        } else {
+                            resultPointsEarned.toString()
+                        }
+                    }.padStart(5) +
+                    if (resultPointsPossible != 0) {
+                        " / "
+                    } else {
+                        "   "
+                    } +
+                    resultPointsPossible.let { points ->
+                        if (points == 0) {
+                            ""
+                        } else {
+                            points.toString()
+                        }
+                    }.padEnd(5) +
+                    it.asJsonObject["explanation"].asString
+
+                if (resultPointsPossible == 0 || resultPointsEarned < resultPointsPossible) {
+                    println(resultLine)
+                } else {
+                    println(resultLine)
+                }
             }
-            println(line)
+
+            println(headerLine)
+
             if (config.reporting.printPretty.showTotal) {
-                print("Total".padEnd(31, ' '))
-                print(pointsEarned.toString().padEnd(5, ' '))
-                showRawPointsEarned?.let { print("(the maximum, capped from $it)") }
-                println()
-                println(line)
+                val totalPointsPossible = config.totalPoints ?: (pointsPossible + earlyPoints)
+                val totalLine = "Total".padEnd(31) +
+                    pointsEarned.toString().padStart(5) +
+                    " / " +
+                    totalPointsPossible.toString().padEnd(5) +
+                    (showRawPointsEarned?.let { print("(the maximum, capped from $it)") } ?: "")
+                println(totalLine)
             }
-            config.reporting.printPretty.notes?.let {
-                println(if (it.contains('\n')) it else WordUtils.wrap(it, 80))
-                println(line)
+
+            val earlyNotes = if (earlyPoints > 0) {
+                config.earlyDeadline.noteForPoints?.invoke(currentCheckpoint!!, earlyPoints)
+            } else {
+                null
             }
+            val notes = config.reporting.printPretty.notes
+            val combinedNotes = listOfNotNull(earlyNotes, notes).joinToString("\n")
+            if (combinedNotes.isNotBlank()) {
+                println(
+                    "\n" + combinedNotes.lines().joinToString("\n") { line ->
+                        WordUtils.wrap(line, 80).trimEnd()
+                    },
+                )
+            }
+
             if (needsCommit) {
                 println(
                     "CONGRATULATIONS: Your changes increased your score from " +
                         "${scoreInfo!!.getCheckpointInfo(currentCheckpoint)?.maxScore ?: 0} to $pointsEarned!",
                 )
                 println("Commit your work right away! The autograder will not run again until you do.")
-                println(line)
+                println(headerLine)
             }
         }
 

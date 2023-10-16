@@ -31,7 +31,9 @@ open class GradePolicyExtension {
     var subprojects: List<Project>? = null
     var systemProperties: MutableMap<String, String> = mutableMapOf()
     var vcs: VcsPolicy = VcsPolicy()
+    var earlyDeadline: EarlyDeadlinePolicy = EarlyDeadlinePolicy()
     var ignoreFingerprintMismatch: Boolean = false
+    var totalPoints: Int? = null
 
     fun checkpoint(action: Action<in CheckpointPolicy>) {
         action.execute(checkpointing)
@@ -64,6 +66,10 @@ open class GradePolicyExtension {
         systemProperties[name] = value
     }
 
+    fun earlyDeadline(action: Action<in EarlyDeadlinePolicy>) {
+        action.execute(earlyDeadline)
+    }
+
     fun vcs(action: Action<in VcsPolicy>) {
         action.execute(vcs)
     }
@@ -87,6 +93,14 @@ open class CheckpointPolicy {
     fun configureTests(action: Closure<Void>) {
         testConfigureAction = BiConsumer { checkpoint, test -> action.call(checkpoint, test) }
     }
+}
+
+/**
+ * Class to hold checkpoint (sub-assignment) settings.
+ */
+open class EarlyDeadlinePolicy {
+    var points: ((checkpoint: String) -> Int)? = null
+    var noteForPoints: ((checkpoint: String, points: Int) -> String)? = null
 }
 
 /**
