@@ -130,7 +130,7 @@ class GradleGraderPlugin : Plugin<Project> {
             if (config.vcs.git && untrackedFiles.isNotEmpty()) {
                 exitManager.fail(
                     "The autograder will not run you add all files to your repository. " +
-                        "Currently missing: ${untrackedFiles.joinToString(", ")}."
+                        "Currently missing: ${untrackedFiles.joinToString(", ")}.",
                 )
             }
             if (checkForUncommitedChanges(currentCheckpoint!!)) {
@@ -305,8 +305,8 @@ class GradleGraderPlugin : Plugin<Project> {
                         configLoader.readValue<CheckpointConfig>(file).checkpoint
                     }
                 )?.also {
-                    scoreTask.currentCheckpoint = it
-                }
+                scoreTask.currentCheckpoint = it
+            }
 
             val evalPending = findSubprojects().toMutableList()
             evalPending.remove(project)

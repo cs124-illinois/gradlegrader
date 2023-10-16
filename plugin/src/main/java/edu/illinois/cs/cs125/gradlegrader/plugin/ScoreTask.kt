@@ -148,7 +148,7 @@ open class ScoreTask : DefaultTask() {
         if (config.vcs.git && untrackedFiles.isNotEmpty()) {
             exitManager.fail(
                 "The autograder will not run you add all files to your repository. " +
-                    "Currently missing: ${untrackedFiles.joinToString(", ")}."
+                    "Currently missing: ${untrackedFiles.joinToString(", ")}.",
             )
         }
 
