@@ -142,7 +142,7 @@ open class ScoreTask : DefaultTask() {
         val config = project.extensions.getByType(GradePolicyExtension::class.java)
 
         val exitManager = ExitManager(config)
-        if (fingerprintingFailed) {
+        if (!config.ignoreFingerprintMismatch && fingerprintingFailed) {
             exitManager.fail("The autograder will not run until you restore the original test suites.")
         }
         if (config.vcs.git && untrackedFiles.isNotEmpty()) {

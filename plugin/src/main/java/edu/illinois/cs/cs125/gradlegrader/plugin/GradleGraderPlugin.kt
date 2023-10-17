@@ -37,7 +37,7 @@ class GradleGraderPlugin : Plugin<Project> {
         val config = project.extensions.create("gradlegrader", GradePolicyExtension::class.java)
         val exitManager = ExitManager(config)
 
-        val fingerprintingFailed = !config.ignoreFingerprintMismatch && try {
+        val fingerprintingFailed = try {
             project.checkFingerprints()
             false
         } catch (e: Exception) {
@@ -124,7 +124,7 @@ class GradleGraderPlugin : Plugin<Project> {
         val reconfTask = project.task("prepareForGrading")
         reconfTask.finalizedBy(scoreTask)
         reconfTask.doLast {
-            if (fingerprintingFailed) {
+            if (!config.ignoreFingerprintMismatch && fingerprintingFailed) {
                 return@doLast
             }
             if (config.vcs.git && untrackedFiles.isNotEmpty()) {
@@ -227,7 +227,7 @@ class GradleGraderPlugin : Plugin<Project> {
 
         // Logic that depends on all projects having been evaluated
         fun onAllProjectsReady() {
-            if (fingerprintingFailed) {
+            if (!config.ignoreFingerprintMismatch && fingerprintingFailed) {
                 return
             }
             if (config.vcs.git && untrackedFiles.isNotEmpty()) {
