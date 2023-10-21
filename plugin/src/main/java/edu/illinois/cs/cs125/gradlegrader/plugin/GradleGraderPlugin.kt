@@ -81,7 +81,7 @@ class GradleGraderPlugin : Plugin<Project> {
         scoreTask.untrackedFiles = untrackedFiles
 
         var uncommittedChanges: Boolean? = null
-        fun checkForUncommitedChanges(currentCheckpoint: String): Boolean {
+        fun checkForUncommittedChanges(currentCheckpoint: String): Boolean {
             if (uncommittedChanges != null) {
                 return uncommittedChanges!!
             }
@@ -121,6 +121,37 @@ class GradleGraderPlugin : Plugin<Project> {
             return uncommittedChanges!!
         }
 
+        fun checkContributorsFile(): List<String>? {
+            // Check contributors file
+            if (!config.identification.enabled) {
+                return null
+            }
+            val txtFile = config.identification.txtFile!!
+            if (!txtFile.exists()) {
+                exitManager.fail("Missing contributor identification file: ${txtFile.absolutePath}")
+            }
+            val partners = Files.readAllLines(txtFile.toPath()).filter { it.isNotBlank() }.filterNotNull()
+            if (!config.identification.countLimit.isSatisfiedBy(partners.size)) {
+                if (partners.isEmpty()) {
+                    exitManager.fail(
+                        config.identification.message
+                            ?: "Identification file is empty: ${txtFile.absolutePath}",
+                    )
+                } else {
+                    exitManager.fail(
+                        config.identification.message
+                            ?: "Invalid number of contributors (${partners.size}) in identification file: ${txtFile.absolutePath}",
+                    )
+                }
+            }
+            partners.forEach {
+                if (!config.identification.validate.isSatisfiedBy(it)) {
+                    exitManager.fail(config.identification.message ?: "Invalid contributor format: $it")
+                }
+            }
+            return partners
+        }
+
         val reconfTask = project.task("prepareForGrading")
         reconfTask.finalizedBy(scoreTask)
         reconfTask.doLast {
@@ -133,8 +164,12 @@ class GradleGraderPlugin : Plugin<Project> {
                         "Currently missing: ${untrackedFiles.joinToString(", ")}.",
                 )
             }
-            if (checkForUncommitedChanges(currentCheckpoint!!)) {
+            if (checkForUncommittedChanges(currentCheckpoint!!)) {
                 exitManager.fail("The autograder will not run until you commit the changes that increased your score.")
+            }
+
+            checkContributorsFile()?.let { partners ->
+                scoreTask.contributors = partners
             }
 
             // Check projects' test tasks
@@ -142,30 +177,6 @@ class GradleGraderPlugin : Plugin<Project> {
                 if (!testTasks.containsKey(subproject)) {
                     exitManager.fail("Couldn't find a test task for project ${subproject.path}")
                 }
-            }
-
-            // Check contributors file
-            if (config.identification.enabled) {
-                val txtFile = config.identification.txtFile!!
-                if (!txtFile.exists()) {
-                    exitManager.fail("Missing contributor identification file: ${txtFile.absolutePath}")
-                }
-                val partners = Files.readAllLines(txtFile.toPath()).filter { it.isNotBlank() }
-                if (!config.identification.countLimit.isSatisfiedBy(partners.size)) {
-                    exitManager.fail(
-                        config.identification.message
-                            ?: "Invalid number of contributors (${partners.size}) in identification file: ${txtFile.absolutePath}",
-                    )
-                }
-                partners.forEach {
-                    if (!config.identification.validate.isSatisfiedBy(it)) {
-                        exitManager.fail(
-                            config.identification.message
-                                ?: "Invalid contributor format: $it",
-                        )
-                    }
-                }
-                scoreTask.contributors = partners
             }
 
             // Configure checkstyle
@@ -233,10 +244,14 @@ class GradleGraderPlugin : Plugin<Project> {
             if (config.vcs.git && untrackedFiles.isNotEmpty()) {
                 return
             }
-            if (checkForUncommitedChanges(currentCheckpoint!!)) {
+            if (checkForUncommittedChanges(currentCheckpoint!!)) {
                 return
             }
-
+            try {
+                checkContributorsFile()
+            } catch (e: Exception) {
+                return
+            }
             val cleanTasks = findSubprojects().map { it.tasks.getByName("clean") }
             if (config.forceClean) {
                 // Require a clean first
