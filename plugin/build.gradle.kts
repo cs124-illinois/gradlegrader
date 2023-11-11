@@ -1,13 +1,13 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     kotlin("jvm")
     `java-gradle-plugin`
     `maven-publish`
+    signing
     id("com.github.johnrengelman.shadow")
     id("org.jmailen.kotlinter")
 }
-
-group = "com.github.cs124-illinois"
-version = "2023.10.8"
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:1.9.0")
@@ -22,8 +22,8 @@ dependencies {
 }
 gradlePlugin {
     plugins {
-        create("plugin") {
-            id = "com.github.cs124-illinois.gradlegrader"
+        create("gradlegrader") {
+            id = "org.cs124.gradlegrader"
             implementationClass = "edu.illinois.cs.cs125.gradlegrader.plugin.GradleGraderPlugin"
         }
     }
@@ -31,20 +31,56 @@ gradlePlugin {
 java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
+    withJavadocJar()
+    withSourcesJar()
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
     }
 }
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+tasks.withType<KotlinCompile> {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
 }
 publishing {
     publications {
-        create<MavenPublication>("gradlegrader") {
+        create<MavenPublication>("lib") {
             artifactId = "gradlegrader"
             from(components["java"])
         }
+        afterEvaluate {
+            withType<MavenPublication> {
+                pom {
+                    name = "gradlegrader"
+                    description = "Gradle grader plugin for CS 124."
+                    url = "https://cs124.org"
+                    licenses {
+                        license {
+                            name = "MIT License"
+                            url = "https://opensource.org/license/mit/"
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = "gchallen"
+                            name = "Geoffrey Challen"
+                            email = "challen@illinois.edu"
+                        }
+                    }
+                    scm {
+                        connection = "scm:git:https://github.com/cs124-illinois/gradlegrader.git"
+                        developerConnection = "scm:git:https://github.com/cs124-illinois/gradlegrader.git"
+                        url = "https://github.com/cs124-illinois/gradlegrader"
+                    }
+                    signing {
+                        sign(this@publications)
+                    }
+                }
+            }
+        }
     }
+}
+tasks.withType<AbstractPublishToMaven>().configureEach {
+    val signingTasks = tasks.withType<Sign>()
+    mustRunAfter(signingTasks)
 }

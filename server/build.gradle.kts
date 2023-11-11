@@ -2,8 +2,6 @@ import java.io.File
 import java.io.StringWriter
 import java.util.Properties
 
-version = "2023.10.2"
-
 plugins {
     kotlin("jvm")
     application

@@ -4,8 +4,13 @@ plugins {
     id("org.jmailen.kotlinter") version "4.0.0" apply false
     id("com.github.ben-manes.versions") version "0.49.0"
     id("com.google.devtools.ksp").version("1.9.10-1.0.13") apply false
+    id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
 }
+
 allprojects {
+    group = "org.cs124"
+    version = "2023.11.0"
+
     repositories {
         mavenCentral()
         maven(url = "https://jitpack.io")
@@ -23,4 +28,12 @@ tasks.dependencyUpdates {
         }
     }
     gradleReleaseChannel = "current"
+}
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+        }
+    }
 }
