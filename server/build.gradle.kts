@@ -10,19 +10,19 @@ plugins {
     id("com.google.devtools.ksp")
 }
 dependencies {
-    ksp("com.squareup.moshi:moshi-kotlin-codegen:1.15.0")
+    ksp("com.squareup.moshi:moshi-kotlin-codegen:1.15.1")
 
-    implementation("io.ktor:ktor-server-netty:2.3.5")
+    implementation("io.ktor:ktor-server-netty:2.3.9")
     implementation("org.mongodb:mongodb-driver:3.12.14")
-    implementation("com.squareup.moshi:moshi-kotlin:1.15.0")
-    implementation("com.github.cs124-illinois:ktor-moshi:2023.10.1")
-    implementation("ch.qos.logback:logback-classic:1.4.11")
+    implementation("com.squareup.moshi:moshi-kotlin:1.15.1")
+    implementation("org.cs124:ktor-moshi:2024.3.0")
+    implementation("ch.qos.logback:logback-classic:1.5.3")
     implementation("com.uchuhimo:konf-core:1.1.2")
     implementation("com.uchuhimo:konf-yaml:1.1.2")
     implementation("io.github.microutils:kotlin-logging:3.0.5")
-    implementation("io.ktor:ktor-server-cors:2.3.5")
-    implementation("io.ktor:ktor-server-forwarded-header:2.3.5")
-    implementation("io.ktor:ktor-server-content-negotiation:2.3.5")
+    implementation("io.ktor:ktor-server-cors:2.3.9")
+    implementation("io.ktor:ktor-server-forwarded-header:2.3.9")
+    implementation("io.ktor:ktor-server-content-negotiation:2.3.9")
 }
 application {
     mainClass.set("edu.illinois.cs.cs125.gradlegrader.server.MainKt")
@@ -72,14 +72,6 @@ task("createProperties") {
 }
 tasks.processResources {
     dependsOn("createProperties")
-}
-afterEvaluate {
-    tasks.named("formatKotlinGeneratedByKspKotlin") {
-        enabled = false
-    }
-    tasks.named("lintKotlinGeneratedByKspKotlin") {
-        enabled = false
-    }
 }
 java {
     toolchain {

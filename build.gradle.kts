@@ -1,19 +1,19 @@
 plugins {
-    kotlin("jvm") version "1.9.10" apply false
+    kotlin("jvm") version "1.9.23" apply false
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("org.jmailen.kotlinter") version "4.0.0" apply false
-    id("com.github.ben-manes.versions") version "0.49.0"
-    id("com.google.devtools.ksp").version("1.9.10-1.0.13") apply false
+    id("org.jmailen.kotlinter") version "4.2.0" apply false
+    id("com.github.ben-manes.versions") version "0.51.0"
+    id("com.google.devtools.ksp").version("1.9.23-1.0.19") apply false
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
 }
 
 allprojects {
-    group = "org.cs124"
-    version = "2023.11.0"
+    group = "org.cs124.gradlegrader"
+    version = "2024.3.0"
 
     repositories {
         mavenCentral()
-        maven(url = "https://jitpack.io")
+        mavenLocal()
     }
 }
 subprojects {
