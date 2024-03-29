@@ -20,6 +20,7 @@ import org.gradle.api.plugins.quality.CheckstyleExtension
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
 import java.nio.file.Files
 
@@ -204,24 +205,28 @@ class GradleGraderPlugin : Plugin<Project> {
             }
 
             // Configure the test tasks
-            testTasks.values.forEach {
-                scoreTask.listenTo(it)
+            testTasks.values.forEach { testTask ->
+                scoreTask.listenTo(testTask)
                 @Suppress("SpellCheckingInspection")
                 if (!project.hasProperty("grade.ignoreproperties")) {
                     config.systemProperties.forEach { (prop, value) ->
-                        it.systemProperty(prop, value)
+                        testTask.systemProperty(prop, value)
                     }
                 }
                 @Suppress("SpellCheckingInspection")
                 if (project.hasProperty("grade.testfilter")) {
-                    it.setTestNameIncludePatterns(mutableListOf(project.property("grade.testfilter") as String))
-                    it.filter.isFailOnNoMatchingTests = false
+                    testTask.setTestNameIncludePatterns(mutableListOf(project.property("grade.testfilter") as String))
+                    testTask.filter.isFailOnNoMatchingTests = false
                 } else if (currentCheckpoint != null) {
-                    config.checkpointing.testConfigureAction.accept(currentCheckpoint!!, it)
+                    config.checkpointing.testConfigureAction.accept(currentCheckpoint!!, testTask)
                 }
-                it.setProperty("ignoreFailures", true)
-                it.outputs.upToDateWhen { false }
-                scoreTask.gatherTestInfo(it)
+                testTask.setProperty("ignoreFailures", true)
+                testTask.outputs.upToDateWhen { false }
+                scoreTask.gatherTestInfo(testTask)
+                // Configure test logging to show more information
+                testTask.testLogging.apply {
+                    exceptionFormat = TestExceptionFormat.FULL
+                }
             }
 
             // Configure compilation tasks

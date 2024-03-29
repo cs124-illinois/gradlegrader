@@ -9,7 +9,7 @@ plugins {
 
 allprojects {
     group = "org.cs124.gradlegrader"
-    version = "2024.3.0"
+    version = "2024.3.1"
 
     repositories {
         mavenCentral()
