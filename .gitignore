@@ -18,3 +18,4 @@ grade.json
 /config.yaml
 /email.txt
 .kotlintest/
+.kotlin/
