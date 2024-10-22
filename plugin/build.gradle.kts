@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -10,15 +11,15 @@ plugins {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:1.9.23")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.0.21")
     implementation(gradleApi())
-    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("com.google.code.gson:gson:2.11.0")
     implementation("org.apache.httpcomponents:httpclient:4.5.14")
-    implementation("org.apache.commons:commons-text:1.11.0")
-    implementation("org.eclipse.jgit:org.eclipse.jgit:6.9.0.202403050737-r")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.0")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.17.0")
-    implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.5")
+    implementation("org.apache.commons:commons-text:1.12.0")
+    implementation("org.eclipse.jgit:org.eclipse.jgit:7.0.0.202409031743-r")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.0")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.0")
+    implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.7")
 }
 gradlePlugin {
     plugins {
@@ -29,8 +30,8 @@ gradlePlugin {
     }
 }
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
     withJavadocJar()
     withSourcesJar()
     toolchain {
@@ -38,8 +39,8 @@ java {
     }
 }
 tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_17
     }
 }
 publishing {

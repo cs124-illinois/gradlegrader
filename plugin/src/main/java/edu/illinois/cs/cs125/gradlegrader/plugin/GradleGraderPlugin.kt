@@ -16,12 +16,13 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.logging.LogLevel
 import org.gradle.api.plugins.quality.CheckstyleExtension
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.jetbrains.kotlin.gradle.dsl.KotlinCompile
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import java.nio.file.Files
 
 /**
@@ -45,9 +46,7 @@ class GradleGraderPlugin : Plugin<Project> {
             true
         }
 
-        fun findSubprojects(): List<Project> {
-            return config.subprojects ?: listOf(project)
-        }
+        fun findSubprojects(): List<Project> = config.subprojects ?: listOf(project)
 
         val javaCompileTasks = mutableSetOf<JavaCompile>()
         val kotlinCompileTasks = mutableSetOf<Task>()
@@ -286,7 +285,7 @@ class GradleGraderPlugin : Plugin<Project> {
                     compile.mustRunAfter(reconfTask)
                     javaCompileTasks.add(compile)
                 }
-                subproject.tasks.withType(KotlinCompile::class.java) { compile ->
+                subproject.tasks.withType(KotlinCompilationTask::class.java) { compile ->
                     compile.mustRunAfter(cleanTasks)
                     compile.mustRunAfter(reconfTask)
                     kotlinCompileTasks.add(compile)
@@ -297,6 +296,7 @@ class GradleGraderPlugin : Plugin<Project> {
                         testTasks[subproject] = test
                         test.mustRunAfter(cleanTasks)
                         test.mustRunAfter(reconfTask)
+                        test.logging.captureStandardError(LogLevel.DEBUG)
                         gradeTask.dependsOn(test)
                     }
                 }

@@ -7,12 +7,8 @@ package edu.illinois.cs.cs125.gradlegrader.plugin
 data class VcsScoreInfo(
     val checkpoints: List<VcsCheckpointScoreInfo>,
 ) {
-    fun getCheckpointInfo(checkpoint: String?): VcsCheckpointScoreInfo? {
-        return checkpoints.firstOrNull { it.checkpoint == checkpoint }
-    }
-    fun withCheckpointInfoSet(info: VcsCheckpointScoreInfo): VcsScoreInfo {
-        return VcsScoreInfo(checkpoints.filter { it.checkpoint != info.checkpoint } + listOf(info))
-    }
+    fun getCheckpointInfo(checkpoint: String?): VcsCheckpointScoreInfo? = checkpoints.firstOrNull { it.checkpoint == checkpoint }
+    fun withCheckpointInfoSet(info: VcsCheckpointScoreInfo): VcsScoreInfo = VcsScoreInfo(checkpoints.filter { it.checkpoint != info.checkpoint } + listOf(info))
 }
 
 /**

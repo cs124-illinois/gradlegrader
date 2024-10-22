@@ -87,14 +87,10 @@ val currentStatus = Status()
 @Suppress("unused")
 class InstantAdapter {
     @FromJson
-    fun instantFromJson(timestamp: String): Instant {
-        return Instant.parse(timestamp)
-    }
+    fun instantFromJson(timestamp: String): Instant = Instant.parse(timestamp)
 
     @ToJson
-    fun instantToJson(instant: Instant): String {
-        return instant.toString()
-    }
+    fun instantToJson(instant: Instant): String = instant.toString()
 }
 
 fun Application.gradlegrader() {
