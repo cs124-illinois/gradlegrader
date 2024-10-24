@@ -16,7 +16,6 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.logging.LogLevel
 import org.gradle.api.plugins.quality.CheckstyleExtension
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.compile.JavaCompile
@@ -296,7 +295,6 @@ class GradleGraderPlugin : Plugin<Project> {
                         testTasks[subproject] = test
                         test.mustRunAfter(cleanTasks)
                         test.mustRunAfter(reconfTask)
-                        test.logging.captureStandardError(LogLevel.DEBUG)
                         gradeTask.dependsOn(test)
                     }
                 }
