@@ -16,6 +16,7 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.logging.LogLevel
 import org.gradle.api.plugins.quality.CheckstyleExtension
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.compile.JavaCompile
@@ -296,6 +297,8 @@ class GradleGraderPlugin : Plugin<Project> {
                         test.mustRunAfter(cleanTasks)
                         test.mustRunAfter(reconfTask)
                         gradeTask.dependsOn(test)
+                        test.jvmArgs("-ea", "-Dfile.encoding=UTF-8", "-Djava.security.manager=allow")
+                        test.logging.captureStandardError(LogLevel.DEBUG)
                     }
                 }
             }
@@ -323,8 +326,8 @@ class GradleGraderPlugin : Plugin<Project> {
                         configLoader.readValue<CheckpointConfig>(file).checkpoint
                     }
                 )?.also {
-                scoreTask.currentCheckpoint = it
-            }
+                    scoreTask.currentCheckpoint = it
+                }
 
             val evalPending = findSubprojects().toMutableList()
             evalPending.remove(project)

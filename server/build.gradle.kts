@@ -17,7 +17,7 @@ dependencies {
     implementation("org.mongodb:mongodb-driver:3.12.14")
     implementation("com.squareup.moshi:moshi-kotlin:1.15.1")
     implementation("org.cs124:ktor-moshi:2024.10.0")
-    implementation("ch.qos.logback:logback-classic:1.5.11")
+    implementation("ch.qos.logback:logback-classic:1.5.12")
     implementation("com.uchuhimo:konf-core:1.1.2")
     implementation("com.uchuhimo:konf-yaml:1.1.2")
     implementation("io.github.microutils:kotlin-logging:3.0.5")
