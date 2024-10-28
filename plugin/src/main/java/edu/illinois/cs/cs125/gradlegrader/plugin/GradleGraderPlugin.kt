@@ -297,8 +297,6 @@ class GradleGraderPlugin : Plugin<Project> {
                         test.mustRunAfter(cleanTasks)
                         test.mustRunAfter(reconfTask)
                         gradeTask.dependsOn(test)
-                        test.jvmArgs("-ea", "-Dfile.encoding=UTF-8", "-Djava.security.manager=allow")
-                        test.logging.captureStandardError(LogLevel.DEBUG)
                     }
                 }
             }
