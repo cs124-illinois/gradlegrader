@@ -109,6 +109,9 @@ fun Application.gradlegrader() {
             call.respond(currentStatus)
             currentStatus.statusCount++
         }
+        get("/version") {
+            call.respond(VERSION)
+        }
         post("/") {
             try {
                 mongoCollection.insertOne(

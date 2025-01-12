@@ -11,14 +11,14 @@ plugins {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.0.21")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.1.0")
     implementation(gradleApi())
     implementation("com.google.code.gson:gson:2.11.0")
     implementation("org.apache.httpcomponents:httpclient:4.5.14")
-    implementation("org.apache.commons:commons-text:1.12.0")
-    implementation("org.eclipse.jgit:org.eclipse.jgit:7.0.0.202409031743-r")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.0")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.0")
+    implementation("org.apache.commons:commons-text:1.13.0")
+    implementation("org.eclipse.jgit:org.eclipse.jgit:7.1.0.202411261347-r")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.2")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.2")
     implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.7")
 }
 gradlePlugin {
@@ -84,4 +84,7 @@ publishing {
 tasks.withType<AbstractPublishToMaven>().configureEach {
     val signingTasks = tasks.withType<Sign>()
     mustRunAfter(signingTasks)
+}
+tasks.shadowJar {
+    isZip64 = true
 }

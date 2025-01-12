@@ -16,8 +16,7 @@ private fun Project.fingerprintFiles() = fileTree("src/test").also {
     it.include("**/*.java", "**/*.kt")
 }
 
-fun Project.checkFingerprints(inputFiles: List<File> = fingerprintFiles().toList()) =
-    inputFiles.forEach { file -> file.checkFingerprint(rootDir) }
+fun Project.checkFingerprints(inputFiles: List<File> = fingerprintFiles().toList()) = inputFiles.forEach { file -> file.checkFingerprint(rootDir) }
 
 fun File.checkFingerprint(base: File) {
     val filename = relativeTo(base).path
