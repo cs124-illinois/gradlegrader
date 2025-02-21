@@ -116,7 +116,7 @@ class GradleGraderPlugin : Plugin<Project> {
                     scoreTask.repoIsClean = clean
                 }
             }
-            return uncommittedChanges!!
+            return uncommittedChanges
         }
 
         fun checkContributorsFile(): List<String>? {
@@ -302,6 +302,13 @@ class GradleGraderPlugin : Plugin<Project> {
 
         // Finish setup once all projects have been evaluated and tasks have been created
         project.afterEvaluate {
+            project.configurations.getByName("testImplementation").dependencies.find { dependency ->
+                (dependency.group == "org.cs124" && dependency.name == "gradlegrader") || (dependency.group == "org.cs124.gradlegrader")
+            }?.let {
+                error("Found explicit gradlegrader library dependency. Please remove it, since it is automatically added by the plugin.")
+            }
+            project.dependencies.add("testImplementation", project.dependencies.create("org.cs124.gradlegrader:lib:$VERSION"))
+
             if (config.forceClean) {
                 reconfTask.dependsOn(
                     project.tasks.register("clearBuildDir", Delete::class.java) { delTask ->
@@ -327,13 +334,13 @@ class GradleGraderPlugin : Plugin<Project> {
 
             val evalPending = findSubprojects().toMutableList()
             evalPending.remove(project)
-            if (evalPending.size == 0) {
+            if (evalPending.isEmpty()) {
                 onAllProjectsReady()
             } else {
                 evalPending.toList().forEach { subproject ->
                     subproject.afterEvaluate {
                         evalPending.remove(subproject)
-                        if (evalPending.size == 0) {
+                        if (evalPending.isEmpty()) {
                             onAllProjectsReady()
                         }
                     }

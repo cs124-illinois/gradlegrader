@@ -1,5 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.io.StringWriter
+import java.util.Properties
 
 plugins {
     kotlin("jvm")
@@ -40,6 +42,24 @@ java {
 tasks.withType<KotlinCompile> {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_21
+    }
+}
+tasks.compileKotlin {
+    dependsOn("createProperties")
+}
+task("createProperties") {
+    dependsOn(tasks.processResources)
+    doLast {
+        val properties = Properties().also {
+            it["version"] = project.version.toString()
+        }
+        File(projectDir, "src/main/resources/edu.illinois.cs.cs125.gradlegrader.plugin.version")
+            .printWriter().use { printWriter ->
+                printWriter.print(
+                    StringWriter().also { properties.store(it, null) }.buffer.toString()
+                        .lines().drop(1).joinToString(separator = "\n").trim()
+                )
+            }
     }
 }
 publishing {
