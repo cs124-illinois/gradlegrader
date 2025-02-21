@@ -9,17 +9,16 @@ plugins {
     id("com.github.johnrengelman.shadow")
     id("org.jmailen.kotlinter")
 }
-
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.1.0")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.1.10")
     implementation(gradleApi())
-    implementation("com.google.code.gson:gson:2.11.0")
+    implementation("com.google.code.gson:gson:2.12.1")
     implementation("org.apache.httpcomponents:httpclient:4.5.14")
     implementation("org.apache.commons:commons-text:1.13.0")
     implementation("org.eclipse.jgit:org.eclipse.jgit:7.1.0.202411261347-r")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.2")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.2")
-    implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.7")
+    implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.8")
 }
 gradlePlugin {
     plugins {
@@ -30,17 +29,17 @@ gradlePlugin {
     }
 }
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
     withJavadocJar()
     withSourcesJar()
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 tasks.withType<KotlinCompile> {
     compilerOptions {
-        jvmTarget = JvmTarget.JVM_17
+        jvmTarget = JvmTarget.JVM_21
     }
 }
 publishing {

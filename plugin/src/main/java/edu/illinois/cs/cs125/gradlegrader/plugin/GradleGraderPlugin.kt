@@ -1,4 +1,3 @@
-@file:SuppressWarnings("NewApi")
 @file:Suppress("UnstableApiUsage")
 
 package edu.illinois.cs.cs125.gradlegrader.plugin

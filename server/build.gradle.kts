@@ -10,7 +10,7 @@ plugins {
     id("com.google.devtools.ksp")
 }
 dependencies {
-    val ktorVersion = "3.0.3"
+    val ktorVersion = "3.1.0"
     ksp("com.squareup.moshi:moshi-kotlin-codegen:1.15.2")
 
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
@@ -42,7 +42,7 @@ tasks.register<Exec>("dockerBuild") {
     workingDir(layout.buildDirectory.dir("docker"))
     environment("DOCKER_BUILDKIT", "1")
     commandLine(
-        ("docker build . " +
+        ("/usr/local/bin/docker build . " +
             "-t ${dockerName}:latest " +
             "-t ${dockerName}:${project.version}").split(" ")
     )
@@ -51,7 +51,7 @@ tasks.register<Exec>("dockerPush") {
     dependsOn("dockerCopyJar", "dockerCopyDockerfile")
     workingDir(layout.buildDirectory.dir("docker"))
     commandLine(
-        ("docker buildx build . --platform=linux/amd64,linux/arm64/v8 " +
+        ("/usr/local/bin/docker buildx build . --platform=linux/amd64,linux/arm64/v8 " +
             "--builder multiplatform " +
             "--tag ${dockerName}:latest " +
             "--tag ${dockerName}:${project.version} --push").split(" ")
@@ -76,6 +76,6 @@ tasks.processResources {
 }
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
