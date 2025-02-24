@@ -143,7 +143,7 @@ open class ScoreTask : DefaultTask() {
 
         val exitManager = ExitManager(config)
         if (!config.ignoreFingerprintMismatch && fingerprintingError.isNotEmpty()) {
-            exitManager.fail("The autograder will not run until you restore the original test suites: $fingerprintingError")
+            exitManager.fail("The autograder will not run until you restore the original test suites.\n$fingerprintingError")
         }
         if (config.vcs.git && untrackedFiles.isNotEmpty()) {
             exitManager.fail(

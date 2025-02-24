@@ -26,8 +26,7 @@ fun File.checkFingerprint(base: File) {
     val contentFingerprint = fingerprint()
     if (fileFingerprint != contentFingerprint) {
         throw GradleException(
-            "Fingerprint mismatch for test file $filename. " +
-                "Undo your changes, restore from Git, or download again.",
+            "Fingerprint mismatch for test file $filename.\nUndo your changes, restore from Git, or download again.",
         )
     }
 }
