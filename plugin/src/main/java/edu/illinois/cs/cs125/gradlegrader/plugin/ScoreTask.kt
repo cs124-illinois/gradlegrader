@@ -75,7 +75,7 @@ open class ScoreTask : DefaultTask() {
     var repoIsClean: Boolean = false
 
     @Input
-    var fingerprintingFailed: Boolean = false
+    var fingerprintingError: String = ""
 
     @Input
     var untrackedFiles: Set<String> = setOf()
@@ -128,7 +128,7 @@ open class ScoreTask : DefaultTask() {
         }
         detektOutputFile = try {
             task.reports.xml.outputLocation.get().asFile ?: project.file("build/reports/detekt/detekt.xml")
-        } catch (e: MissingValueException) {
+        } catch (_: MissingValueException) {
             project.file("build/reports/detekt/detekt.xml")
         }
     }
@@ -142,8 +142,8 @@ open class ScoreTask : DefaultTask() {
         val config = project.extensions.getByType(GradePolicyExtension::class.java)
 
         val exitManager = ExitManager(config)
-        if (!config.ignoreFingerprintMismatch && fingerprintingFailed) {
-            exitManager.fail("The autograder will not run until you restore the original test suites.")
+        if (!config.ignoreFingerprintMismatch && fingerprintingError.isNotEmpty()) {
+            exitManager.fail("The autograder will not run until you restore the original test suites: $fingerprintingError")
         }
         if (config.vcs.git && untrackedFiles.isNotEmpty()) {
             exitManager.fail(

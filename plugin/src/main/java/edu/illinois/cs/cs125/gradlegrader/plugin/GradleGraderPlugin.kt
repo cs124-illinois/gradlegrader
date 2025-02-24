@@ -37,11 +37,11 @@ class GradleGraderPlugin : Plugin<Project> {
         val config = project.extensions.create("gradlegrader", GradePolicyExtension::class.java)
         val exitManager = ExitManager(config)
 
-        val fingerprintingFailed = try {
+        val fingerprintingError = try {
             project.checkFingerprints()
-            false
+            ""
         } catch (e: Exception) {
-            true
+            e.message ?: "Unknown fingerprinting error"
         }
 
         fun findSubprojects(): List<Project> = config.subprojects ?: listOf(project)
@@ -57,7 +57,7 @@ class GradleGraderPlugin : Plugin<Project> {
 
         val gradeTask = project.tasks.register("grade").get()
         val scoreTask: ScoreTask = project.tasks.register("score", ScoreTask::class.java).get()
-        scoreTask.fingerprintingFailed = fingerprintingFailed
+        scoreTask.fingerprintingError = fingerprintingError
         scoreTask.mustRunAfter(gradeTask)
         gradeTask.finalizedBy(scoreTask)
 
@@ -153,7 +153,7 @@ class GradleGraderPlugin : Plugin<Project> {
         val reconfTask = project.task("prepareForGrading")
         reconfTask.finalizedBy(scoreTask)
         reconfTask.doLast {
-            if (!config.ignoreFingerprintMismatch && fingerprintingFailed) {
+            if (!config.ignoreFingerprintMismatch && fingerprintingError.isNotEmpty()) {
                 return@doLast
             }
             if (config.vcs.git && untrackedFiles.isNotEmpty()) {
@@ -240,7 +240,7 @@ class GradleGraderPlugin : Plugin<Project> {
 
         // Logic that depends on all projects having been evaluated
         fun onAllProjectsReady() {
-            if (!config.ignoreFingerprintMismatch && fingerprintingFailed) {
+            if (!config.ignoreFingerprintMismatch && fingerprintingError.isNotEmpty()) {
                 return
             }
             if (config.vcs.git && untrackedFiles.isNotEmpty()) {
