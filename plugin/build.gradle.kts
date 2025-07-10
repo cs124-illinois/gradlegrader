@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jmailen.gradle.kotlinter.tasks.ConfigurableKtLintTask
 import java.io.StringWriter
 import java.util.Properties
 
@@ -12,14 +13,14 @@ plugins {
     id("org.jmailen.kotlinter")
 }
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.1.10")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.0")
     implementation(gradleApi())
-    implementation("com.google.code.gson:gson:2.12.1")
+    implementation("com.google.code.gson:gson:2.13.1")
     implementation("org.apache.httpcomponents:httpclient:4.5.14")
-    implementation("org.apache.commons:commons-text:1.13.0")
-    implementation("org.eclipse.jgit:org.eclipse.jgit:7.1.0.202411261347-r")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.2")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.2")
+    implementation("org.apache.commons:commons-text:1.13.1")
+    implementation("org.eclipse.jgit:org.eclipse.jgit:7.3.0.202506031305-r")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.19.1")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.1")
     implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.8")
 }
 gradlePlugin {
@@ -106,4 +107,7 @@ tasks.withType<AbstractPublishToMaven>().configureEach {
 }
 tasks.shadowJar {
     isZip64 = true
+}
+tasks.withType<ConfigurableKtLintTask> {
+    exclude { it.file.path.contains("generated/") }
 }
