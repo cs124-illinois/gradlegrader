@@ -39,6 +39,7 @@ GradleGrader is a Gradle plugin system for autograding Java-based assignments. I
 - `./gradlew kotlinterCheck` - Check Kotlin code style
 - `./gradlew kotlinterFormat` - Format Kotlin code
 - `./gradlew dependencyUpdates` - Check for dependency updates
+- Use the Gradle check task to validate the project, not the build task.
 
 ## Architecture
 
