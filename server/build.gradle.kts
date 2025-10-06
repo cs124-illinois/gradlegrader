@@ -7,19 +7,19 @@ import java.util.Properties
 plugins {
     kotlin("jvm")
     application
-    id("com.github.johnrengelman.shadow")
+    id("com.gradleup.shadow")
     id("org.jmailen.kotlinter")
     id("com.google.devtools.ksp")
 }
 dependencies {
-    val ktorVersion = "3.2.1"
+    val ktorVersion = "3.3.0"
     ksp("com.squareup.moshi:moshi-kotlin-codegen:1.15.2")
 
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("org.mongodb:mongodb-driver:3.12.14")
     implementation("com.squareup.moshi:moshi-kotlin:1.15.2")
-    implementation("org.cs124:ktor-moshi:2025.6.0")
-    implementation("ch.qos.logback:logback-classic:1.5.18")
+    implementation("org.cs124:ktor-moshi:2025.8.0")
+    implementation("ch.qos.logback:logback-classic:1.5.19")
     implementation("com.uchuhimo:konf-core:1.1.2")
     implementation("com.uchuhimo:konf-yaml:1.1.2")
     implementation("io.github.microutils:kotlin-logging:3.0.5")
@@ -58,7 +58,7 @@ tasks.register<Exec>("dockerPush") {
             "--tag ${dockerName}:${project.version} --push").split(" ")
     )
 }
-task("createProperties") {
+tasks.register("createProperties") {
     doLast {
         val properties = Properties().also {
             it["version"] = project.version.toString()

@@ -1,15 +1,15 @@
 plugins {
-    kotlin("jvm") version "2.2.0" apply false
-    id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("org.jmailen.kotlinter") version "5.1.1" apply false
-    id("com.github.ben-manes.versions") version "0.52.0"
-    id("com.google.devtools.ksp").version("2.2.0-2.0.2") apply false
+    kotlin("jvm") version "2.2.20" apply false
+    id("com.gradleup.shadow") version "8.3.8"
+    id("org.jmailen.kotlinter") version "5.2.0" apply false
+    id("com.github.ben-manes.versions") version "0.53.0"
+    id("com.google.devtools.ksp").version("2.2.20-2.0.3") apply false
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
 }
 
 allprojects {
     group = "org.cs124.gradlegrader"
-    version = "2025.7.0"
+    version = "2025.10.0"
 
     repositories {
         mavenCentral()

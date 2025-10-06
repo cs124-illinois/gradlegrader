@@ -9,18 +9,18 @@ plugins {
     `java-gradle-plugin`
     `maven-publish`
     signing
-    id("com.github.johnrengelman.shadow")
+    id("com.gradleup.shadow")
     id("org.jmailen.kotlinter")
 }
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.0")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin-api:2.2.20")
     implementation(gradleApi())
-    implementation("com.google.code.gson:gson:2.13.1")
+    implementation("com.google.code.gson:gson:2.13.2")
     implementation("org.apache.httpcomponents:httpclient:4.5.14")
-    implementation("org.apache.commons:commons-text:1.13.1")
+    implementation("org.apache.commons:commons-text:1.14.0")
     implementation("org.eclipse.jgit:org.eclipse.jgit:7.3.0.202506031305-r")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.19.1")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.19.1")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.20.0")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.20.0")
     implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.8")
 }
 gradlePlugin {
@@ -48,7 +48,7 @@ tasks.withType<KotlinCompile> {
 tasks.compileKotlin {
     dependsOn("createProperties")
 }
-task("createProperties") {
+tasks.register("createProperties") {
     dependsOn(tasks.processResources)
     doLast {
         val properties = Properties().also {
