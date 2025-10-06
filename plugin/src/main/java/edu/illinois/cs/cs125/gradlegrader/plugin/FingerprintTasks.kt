@@ -5,6 +5,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.file.FileTree
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 import java.math.BigInteger
@@ -12,11 +13,16 @@ import java.security.MessageDigest
 
 private const val MD5PREFIX = "// md5:"
 
-private fun Project.fingerprintFiles() = fileTree("src/test").also {
-    it.include("**/*.java", "**/*.kt")
+private fun Project.fingerprintFiles(policy: FingerprintPolicy): FileTree {
+    if (policy.patterns.isEmpty()) {
+        return files().asFileTree
+    }
+    return fileTree(rootDir).also {
+        it.include(policy.patterns)
+    }
 }
 
-fun Project.checkFingerprints(inputFiles: List<File> = fingerprintFiles().toList()) = inputFiles.forEach { file -> file.checkFingerprint(rootDir) }
+fun Project.checkFingerprints(policy: FingerprintPolicy, inputFiles: List<File> = fingerprintFiles(policy).toList()) = inputFiles.forEach { file -> file.checkFingerprint(rootDir) }
 
 fun File.checkFingerprint(base: File) {
     val filename = relativeTo(base).path
@@ -61,17 +67,20 @@ fun File.fingerprint(): String {
 }
 
 abstract class FingerprintTask : DefaultTask() {
+    @Internal
+    lateinit var policy: FingerprintPolicy
+
     init {
         group = "Publishing"
         description = "Fingerprint test suites."
     }
 
     @InputFiles
-    val inputFiles: FileTree = project.fingerprintFiles()
+    fun getInputFiles(): FileTree = project.fingerprintFiles(policy)
 
     @TaskAction
     fun fingerprint() {
-        inputFiles.sortedBy { it.name }.forEach {
+        getInputFiles().sortedBy { it.name }.forEach {
             it.addFingerprint()
             println("Fingerprinted ${it.name}")
         }
@@ -79,14 +88,17 @@ abstract class FingerprintTask : DefaultTask() {
 }
 
 abstract class CheckFingerprintTask : DefaultTask() {
+    @Internal
+    lateinit var policy: FingerprintPolicy
+
     init {
         group = "Verification"
         description = "Check test suite fingerprints."
     }
 
     @InputFiles
-    val inputFiles: FileTree = project.fingerprintFiles()
+    fun getInputFiles(): FileTree = project.fingerprintFiles(policy)
 
     @TaskAction
-    fun check() = project.checkFingerprints(inputFiles.toList())
+    fun check() = project.checkFingerprints(policy, getInputFiles().toList())
 }

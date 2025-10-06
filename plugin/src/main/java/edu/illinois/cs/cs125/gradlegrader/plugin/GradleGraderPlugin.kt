@@ -38,7 +38,7 @@ class GradleGraderPlugin : Plugin<Project> {
         val exitManager = ExitManager(config)
 
         val fingerprintingError = try {
-            project.checkFingerprints()
+            project.checkFingerprints(config.fingerprint)
             ""
         } catch (e: Exception) {
             e.message ?: "Unknown fingerprinting error"
@@ -61,8 +61,12 @@ class GradleGraderPlugin : Plugin<Project> {
         scoreTask.mustRunAfter(gradeTask)
         gradeTask.finalizedBy(scoreTask)
 
-        project.tasks.register("fingerprintTests", FingerprintTask::class.java)
-        project.tasks.register("checkTestFingerprints", CheckFingerprintTask::class.java).get()
+        project.tasks.register("fingerprintFiles", FingerprintTask::class.java).get().also {
+            it.policy = config.fingerprint
+        }
+        project.tasks.register("checkFileFingerprints", CheckFingerprintTask::class.java).get().also {
+            it.policy = config.fingerprint
+        }
 
         val gitRepo = try {
             val ceiling =

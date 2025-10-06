@@ -23,6 +23,7 @@ open class GradePolicyExtension {
     var checkpointing: CheckpointPolicy = CheckpointPolicy()
     var checkstyle: CheckstylePolicy = CheckstylePolicy()
     var detekt: DetektPolicy = DetektPolicy()
+    var fingerprint: FingerprintPolicy = FingerprintPolicy()
     var forceClean: Boolean = true
     var identification: IdentificationPolicy = IdentificationPolicy()
     var keepDaemon: Boolean = true
@@ -75,6 +76,10 @@ open class GradePolicyExtension {
 
     fun points(action: Action<in PointsPolicy>) {
         action.execute(points)
+    }
+
+    fun fingerprintFiles(vararg patterns: String) {
+        fingerprint.patterns.addAll(patterns)
     }
 }
 
@@ -223,4 +228,15 @@ open class PointsPolicy {
     var total: Int? = null
     var max: Int? = null
     var failOnPointMismatch = true
+}
+
+/**
+ * Class to hold fingerprint settings.
+ */
+open class FingerprintPolicy {
+    var patterns: MutableList<String> = mutableListOf()
+
+    fun include(vararg patterns: String) {
+        this.patterns.addAll(patterns)
+    }
 }
