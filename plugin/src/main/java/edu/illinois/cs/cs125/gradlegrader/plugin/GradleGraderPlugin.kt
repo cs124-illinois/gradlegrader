@@ -150,7 +150,7 @@ class GradleGraderPlugin : Plugin<Project> {
             return partners
         }
 
-        val reconfTask = project.task("prepareForGrading")
+        val reconfTask = project.tasks.register("prepareForGrading").get()
         reconfTask.finalizedBy(scoreTask)
         reconfTask.doLast {
             if (!config.ignoreFingerprintMismatch && fingerprintingError.isNotEmpty()) {
