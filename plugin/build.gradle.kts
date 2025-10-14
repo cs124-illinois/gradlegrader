@@ -18,7 +18,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.13.2")
     implementation("org.apache.httpcomponents:httpclient:4.5.14")
     implementation("org.apache.commons:commons-text:1.14.0")
-    implementation("org.eclipse.jgit:org.eclipse.jgit:7.3.0.202506031305-r")
+    implementation("org.eclipse.jgit:org.eclipse.jgit:7.4.0.202509020913-r")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.20.0")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.20.0")
     implementation("io.gitlab.arturbosch.detekt:detekt-gradle-plugin:1.23.8")

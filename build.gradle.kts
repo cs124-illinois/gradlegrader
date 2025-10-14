@@ -1,9 +1,9 @@
 plugins {
     kotlin("jvm") version "2.2.20" apply false
-    id("com.gradleup.shadow") version "8.3.8"
+    id("com.gradleup.shadow") version "9.2.2"
     id("org.jmailen.kotlinter") version "5.2.0" apply false
     id("com.github.ben-manes.versions") version "0.53.0"
-    id("com.google.devtools.ksp").version("2.2.20-2.0.3") apply false
+    id("com.google.devtools.ksp").version("2.2.20-2.0.4") apply false
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
 }
 
