@@ -357,6 +357,28 @@ open class ScoreTask : DefaultTask() {
             results.add("git", gitResults)
         }
 
+        // Check Claude version
+        if (config.checkClaudeVersion) {
+            val claudeResults = JsonObject()
+            try {
+                val process = ProcessBuilder("claude", "--version")
+                    .redirectErrorStream(true)
+                    .start()
+                val output = process.inputStream.bufferedReader().readText().trim()
+                val exitCode = process.waitFor()
+
+                claudeResults.addProperty("version", output)
+                claudeResults.addProperty("found", exitCode == 0)
+                if (exitCode != 0) {
+                    claudeResults.addProperty("error", "Command exited with code $exitCode")
+                }
+            } catch (e: Exception) {
+                claudeResults.addProperty("found", false)
+                claudeResults.addProperty("error", e.message ?: "Unknown error")
+            }
+            results.add("claude", claudeResults)
+        }
+
         // Note score for commit requirement
         var needsCommit = false
         if (config.vcs.requireCommit && lastCommitId?.isNotEmpty() == true) {

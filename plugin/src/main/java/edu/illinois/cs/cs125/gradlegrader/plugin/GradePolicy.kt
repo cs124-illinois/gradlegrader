@@ -20,6 +20,7 @@ open class GradePolicyExtension {
 
     var assignment: String? = null
     var captureOutput: Boolean = false
+    var checkClaudeVersion: Boolean = false
     var checkpointing: CheckpointPolicy = CheckpointPolicy()
     var checkstyle: CheckstylePolicy = CheckstylePolicy()
     var detekt: DetektPolicy = DetektPolicy()
