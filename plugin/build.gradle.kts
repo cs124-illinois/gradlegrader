@@ -95,17 +95,21 @@ publishing {
                         developerConnection = "scm:git:https://github.com/cs124-illinois/gradlegrader.git"
                         url = "https://github.com/cs124-illinois/gradlegrader"
                     }
-                    signing {
-                        sign(this@publications)
-                    }
                 }
             }
         }
     }
 }
-tasks.withType<AbstractPublishToMaven>().configureEach {
-    val signingTasks = tasks.withType<Sign>()
-    mustRunAfter(signingTasks)
+signing {
+    setRequired {
+        gradle.taskGraph.allTasks.any { it.name.contains("ToSonatype") }
+    }
+    sign(publishing.publications)
+}
+tasks.withType<Sign>().configureEach {
+    onlyIf {
+        gradle.taskGraph.allTasks.any { it.name.contains("ToSonatype") }
+    }
 }
 tasks.shadowJar {
     isZip64 = true
