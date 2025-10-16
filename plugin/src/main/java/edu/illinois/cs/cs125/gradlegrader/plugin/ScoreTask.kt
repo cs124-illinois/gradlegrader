@@ -10,6 +10,7 @@ import org.apache.commons.text.WordUtils
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.HttpClientBuilder
+import org.apache.tools.ant.taskdefs.condition.Os
 import org.eclipse.jgit.lib.StoredConfig
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
@@ -361,9 +362,12 @@ open class ScoreTask : DefaultTask() {
         if (config.checkClaudeVersion) {
             val claudeResults = JsonObject()
             try {
-                val process = ProcessBuilder("claude", "--version")
-                    .redirectErrorStream(true)
-                    .start()
+                val processBuilder = if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                    ProcessBuilder("cmd", "/c", "claude --version")
+                } else {
+                    ProcessBuilder("sh", "-c", "claude --version")
+                }
+                val process = processBuilder.redirectErrorStream(true).start()
                 val output = process.inputStream.bufferedReader().readText().trim()
                 val exitCode = process.waitFor()
 
