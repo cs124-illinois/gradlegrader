@@ -191,7 +191,7 @@ class GradleGraderPlugin : Plugin<Project> {
                 checkstyleTask.setIncludes(config.checkstyle.include)
                 checkstyleTask.setExcludes(config.checkstyle.exclude)
                 checkstyleTask.configFile =
-                    checkstyleConfig.configFile ?: exitManager.fail("checkstyle.configFile not specified")
+                    checkstyleConfig.configFile
                 checkstyleTask.classpath = project.files()
                 scoreTask.listenTo(checkstyleTask)
             }
