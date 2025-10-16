@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection")
+
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jmailen.gradle.kotlinter.tasks.ConfigurableKtLintTask
@@ -109,5 +111,5 @@ tasks.shadowJar {
     isZip64 = true
 }
 tasks.withType<ConfigurableKtLintTask> {
-    exclude { it.file.path.contains("generated/") }
+    exclude { it.file.path.contains("generated${File.separator}") }
 }

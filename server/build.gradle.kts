@@ -81,5 +81,5 @@ java {
     }
 }
 tasks.withType<ConfigurableKtLintTask> {
-    exclude { it.file.path.contains("generated/") }
+    exclude { it.file.path.contains("generated${File.separator}") }
 }
