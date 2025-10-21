@@ -1,5 +1,6 @@
 @file:Suppress("SpellCheckingInspection")
 
+import org.gradle.api.publish.maven.tasks.AbstractPublishToMaven
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jmailen.gradle.kotlinter.tasks.ConfigurableKtLintTask
@@ -110,6 +111,9 @@ tasks.withType<Sign>().configureEach {
     onlyIf {
         gradle.taskGraph.allTasks.any { it.name.contains("ToSonatype") }
     }
+}
+tasks.withType<AbstractPublishToMaven>().configureEach {
+    dependsOn(tasks.withType<Sign>())
 }
 tasks.shadowJar {
     isZip64 = true
