@@ -12,14 +12,14 @@ plugins {
     id("com.google.devtools.ksp")
 }
 dependencies {
-    val ktorVersion = "3.3.1"
+    val ktorVersion = "3.3.2"
     ksp("com.squareup.moshi:moshi-kotlin-codegen:1.15.2")
 
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("org.mongodb:mongodb-driver:3.12.14")
     implementation("com.squareup.moshi:moshi-kotlin:1.15.2")
     implementation("org.cs124:ktor-moshi:2025.8.0")
-    implementation("ch.qos.logback:logback-classic:1.5.20")
+    implementation("ch.qos.logback:logback-classic:1.5.21")
     implementation("com.uchuhimo:konf-core:1.1.2")
     implementation("com.uchuhimo:konf-yaml:1.1.2")
     implementation("io.github.microutils:kotlin-logging:3.0.5")
