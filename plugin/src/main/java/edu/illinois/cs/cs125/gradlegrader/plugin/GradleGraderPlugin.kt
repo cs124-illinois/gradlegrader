@@ -156,6 +156,26 @@ class GradleGraderPlugin : Plugin<Project> {
 
         val reconfTask = project.tasks.register("prepareForGrading").get()
         reconfTask.finalizedBy(scoreTask)
+        // Register yaml file as input so task reruns if it changes
+        config.checkpointing.yamlFile?.let { file ->
+            reconfTask.inputs.file(file).optional(false)
+        }
+        reconfTask.doFirst {
+            // Read checkpoint at execution time so changes to grade.yaml are picked up
+            currentCheckpoint = (
+                try {
+                    project.property("checkpoint")?.toString()
+                } catch (_: Exception) {
+                    null
+                }
+                    ?: config.checkpointing.yamlFile?.let { file ->
+                        val configLoader = ObjectMapper(YAMLFactory()).also { it.registerKotlinModule() }
+                        configLoader.readValue<CheckpointConfig>(file).checkpoint
+                    }
+                )?.also {
+                scoreTask.currentCheckpoint = it
+            }
+        }
         reconfTask.doLast {
             if (!config.ignoreFingerprintMismatch && fingerprintingError.isNotEmpty()) {
                 return@doLast
@@ -244,20 +264,6 @@ class GradleGraderPlugin : Plugin<Project> {
 
         // Logic that depends on all projects having been evaluated
         fun onAllProjectsReady() {
-            if (!config.ignoreFingerprintMismatch && fingerprintingError.isNotEmpty()) {
-                return
-            }
-            if (config.vcs.git && untrackedFiles.isNotEmpty()) {
-                return
-            }
-            if (checkForUncommittedChanges(currentCheckpoint!!)) {
-                return
-            }
-            try {
-                checkContributorsFile()
-            } catch (e: Exception) {
-                return
-            }
             val cleanTasks = findSubprojects().map { it.tasks.getByName("clean") }
             if (config.forceClean) {
                 // Require a clean first
@@ -321,20 +327,6 @@ class GradleGraderPlugin : Plugin<Project> {
                 )
             }
             scoreTask.dependsOn(reconfTask)
-
-            currentCheckpoint = (
-                try {
-                    project.property("checkpoint")?.toString()
-                } catch (_: Exception) {
-                    null
-                }
-                    ?: config.checkpointing.yamlFile?.let { file ->
-                        val configLoader = ObjectMapper(YAMLFactory()).also { it.registerKotlinModule() }
-                        configLoader.readValue<CheckpointConfig>(file).checkpoint
-                    }
-                )?.also {
-                scoreTask.currentCheckpoint = it
-            }
 
             val evalPending = findSubprojects().toMutableList()
             evalPending.remove(project)
